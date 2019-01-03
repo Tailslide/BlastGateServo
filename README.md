@@ -1,6 +1,8 @@
 # BlastGateServo
 Blast gate servo controller for Arduino
 
+See 3d printed parts at : https://www.thingiverse.com/thing:3301904
+
  *   Allows a single push button to switch between different blast gates, with only a single one open at a time.
  *   Currently open blast gate is indicated by an LED.
  *   
