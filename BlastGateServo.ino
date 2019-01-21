@@ -10,140 +10,139 @@
  *   (if my sensor ever shows up)
  *   
  *   Created 2019-01-02 - Greg Pringle
- *   
+ *   Updated 2019-01-20 - Greg Pringle - Refactored, added support for AC current sensor
  */
 #include <Servo.h>
+#include "Debug.h"
+#include "Configuration.h"
+#include "GateServos.h"
+#include "AcSensors.h"
 
-//#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
-#ifdef DEBUG    //Macros are usually in all capital letters.
-  #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
-  #define DPRINTLN(...)  Serial.println(__VA_ARGS__)   //DPRINTLN is a macro, debug print with new line
-#else
-  #define DPRINT(...)     //now defines a blank line
-  #define DPRINTLN(...)   //now defines a blank line
-#endif
-
-const int closedelay = 1000; // how long it takes a gate to close
-const int opendelay = 1000; // how long after last button push to open gate
-const int buttonPin = 13;     // the number of the pushbutton pin
-const int numgates = 4;
-const int servopin[] = {11,10,8,9}; // (My gates) 9 = table saw gate, 8 = sander gate, 10 = hand tool gate, 11= miter saw gate
-const int ledpin[] = {3,4,5,6}; // LED pins
-const int maxservo[] = {180,166,166,166}; // close positions
-const int minservo[] = {100,100,0,0}; // open positions
-const bool hasbutton = true;
- 
 int buttonState = 0;         // variable for reading the pushbutton status
 int lastbuttonpushms = 0;
-
-bool gateopen[] = {false, false, false, false};
-bool gateclosed[] = {true, true, true, true}; 
-
-int curopengate = -1;
 int curselectedgate = -1;
 bool waitingforbuttonrelease = false;
+bool metermode = false; 
 
-Servo myservo;  // create servo object to control a servo
-             // a maximum of eight servo objects can be created
+static const bool has_button = HAS_BUTTON;
+static const int buttonPin = BUTTON_PIN;
+static const bool hasbutton = HAS_BUTTON;  
+
+GateServos gateservos(-1);  // object controlling blast gate servos
+AcSensors acsensors;        // objest controlling AC current sensors
 
 void setup() {
   #ifdef DEBUG
   Serial.begin(9600);
   #endif
+
+  gateservos.initializeGates();
+
+  // initialize the pushbutton pin as an input:
+  if (has_button) pinMode(buttonPin, INPUT);
   
-  // close all gates one by one
-  for (int thisgate = 0; thisgate < numgates; thisgate++)
-  {
-   pinMode(ledpin[thisgate], OUTPUT);
-   digitalWrite(ledpin[thisgate], HIGH);
-   myservo.attach(servopin[thisgate]);  // attaches the servo
-   myservo.write(maxservo[thisgate]); //close gate
-   delay(closedelay); // wait for gate to close
-   myservo.detach();
-   digitalWrite(ledpin[thisgate], LOW);
-  }
-  pinMode(LED_BUILTIN, OUTPUT);
-   // initialize the pushbutton pin as an input:
-  if (hasbutton) pinMode(buttonPin, INPUT);
+  if (digitalRead(buttonPin)== HIGH) // user held down button on startup, go into meter mode
+      metermode = true;
+  else metermode = false;
+
+  #ifdef DEBUGMETER
+      metermode = true;
+  #endif
+  acsensors.InitializeSensors();
 }
 
-void closegate(int gatenum)
-{
-    digitalWrite(ledpin[gatenum], LOW);
-    myservo.attach(servopin[gatenum]);  // attaches the servo
-    myservo.write(maxservo[gatenum]); //close gate
-    delay(closedelay); // wait for gate to close
-    myservo.detach();
-}
-
-void opengate(int gatenum)
-{
-    curopengate = gatenum;
-    digitalWrite(ledpin[gatenum], HIGH);
-    myservo.attach(servopin[gatenum]);  // attaches the servo
-    myservo.write(minservo[gatenum]); //open gate
-    delay(closedelay); // wait for gate to close
-    myservo.detach();
-}
 
 void loop() 
 {
+  bool toolon = false; // indicates if there is any current sensed
 
-    // read the state of the pushbutton value:
-  if (hasbutton) buttonState = digitalRead(buttonPin);
-  if (hasbutton && buttonState == HIGH)
-  {
-    if (! waitingforbuttonrelease)
-    {
-      lastbuttonpushms = 0;
-      DPRINT("Button Pushed, curselectedgate= ");  
-      DPRINTLN(curselectedgate);
-      digitalWrite(ledpin[curselectedgate], LOW);
-      curselectedgate++;
-      if (curselectedgate == numgates) 
-        curselectedgate = -1;
-      else
-        digitalWrite(ledpin[curselectedgate], HIGH);                
-      waitingforbuttonrelease= true;
-    }
-  }
+  acsensors.ReadSensors(); // read all the AC current sensors
   
-  if (hasbutton && buttonState == LOW)
+  if (metermode)  acsensors.DisplayMeter();  // if user put device into meter mode, use LED lights to display sensor signal.
+  else // not meter mode
   {
-    if (waitingforbuttonrelease)
+    for (int cursensor=0; cursensor < acsensors.num_ac_sensors; cursensor++)
     {
-       waitingforbuttonrelease=false;
-       lastbuttonpushms = 0;
-    }
-  
-    if (lastbuttonpushms > opendelay)
-    {    
-        if (curselectedgate == numgates)
+        // This sensor is triggered by power tool
+        //
+        if (acsensors.Triggered(cursensor))
         {
-          closegate(curopengate);
-          curopengate=-1;
-          curselectedgate=-1;
+          // this tool is active, output info to debug
+          DPRINT(" TOOL ON #"); DPRINT(cursensor); DPRINT(" OFF READING:"); DPRINT(offReadings[cursensor]); DPRINT(" AVG SENSOR READING:"); DPRINTLN(avgSensorReading(cursensor));
+
+          // ignore button if tool detected
+          waitingforbuttonrelease = false;
+          toolon = true;
+          if (curselectedgate != cursensor) curselectedgate = cursensor;
+
+          // Gate hasn't been opened yet, open it
+          if (gateservos.gateopen[cursensor] != true)
+          {
+            gateservos.gateopen[cursensor] = true;
+            gateservos.ledon(cursensor);
+            gateservos.opengate(cursensor);
+          }
         }
         else
         {
-          if (curopengate > -1) 
+          // this tool is not active and gate hasn't been closed yet. Close it.
+          if (gateservos.gateopen[cursensor])
           {
-            DPRINT("Closing Gate= ");  
-            DPRINTLN(curopengate);
-            closegate(curopengate);
-          }      
-          curopengate = curselectedgate;   
-          DPRINT("Opening Gate= ");  
-          DPRINTLN(curopengate);
-          opengate(curopengate);      
+            gateservos.gateopen[cursensor] = false;
+            gateservos.ledoff(cursensor);
+            DPRINT(" TOOL OFF #"); DPRINTLN(cursensor);
+            gateservos.closegate(cursensor);      
+            curselectedgate = gateservos.firstgateopen();  // change currently active gate to first open one
+          }
         }
-     }
-   }
+    }
 
+    // read the state of the pushbutton value.  
+    // Allow the user to light up the appropriate gate and pause before opening/closing the gates.
+    if (hasbutton) buttonState = digitalRead(buttonPin);
+    if (hasbutton && !toolon && buttonState == HIGH)
+    {
+      if (! waitingforbuttonrelease)
+      {
+        lastbuttonpushms = 0;
+        DPRINT("Button Pushed, curselectedgate= ");  DPRINTLN(curselectedgate);
+        gateservos.ledoff(curselectedgate);
+        curselectedgate++;
+        if (curselectedgate == gateservos.num_gates) 
+          curselectedgate = -1;
+        else
+          gateservos.ledon(curselectedgate);
+        waitingforbuttonrelease= true;
+      }
+    }
+    
+    if (hasbutton && !toolon && buttonState == LOW)
+    {
+      if (waitingforbuttonrelease)
+      {
+         waitingforbuttonrelease=false;
+         lastbuttonpushms = 0;
+      }
+    
+      if (lastbuttonpushms > gateservos.opendelay)
+      {    
+          gateservos.ManuallyOpenGate(curselectedgate);
+      }
+    }
+  }
+  
+  if (metermode)
+   delay(1);  // minimal delay while metering so we can collect as many samples as possible
+  else 
    delay(50);
-   if (curselectedgate == curopengate) 
-      lastbuttonpushms = 0;
-   else
-      lastbuttonpushms +=50;
-   
+  if (!toolon)
+  {    
+     // User is picking which gate to open manually. this code 'debounces' the button so it only moves one at a time
+     //
+     if (curselectedgate == gateservos.curopengate) 
+        lastbuttonpushms = 0;
+     else
+        lastbuttonpushms +=50;
+  }
+  
 }
