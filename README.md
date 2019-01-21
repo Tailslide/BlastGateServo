@@ -8,8 +8,7 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
  *   
  *   Requires:  A servo for each blast gate, one button
  *   Optional: An LED for each blast gate
- *   
- *   In the future I plan on adding an option to automate this based on detected AC current from the tool
- *   (if my sensor ever shows up)
+ *   Optional: AC currents sensors from http://moderndevice.com/current
  *   
  *   Created 2019-01-02 - Greg Pringle
+ *   Updated 2019-01-20 - Greg Pringle - Added AC sensor support
