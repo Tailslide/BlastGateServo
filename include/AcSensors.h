@@ -58,6 +58,8 @@
       void ReadSensors();                     // Read values for AC current sensors and add to list of values we will average
       void DisplayMeter();                    // Use LEDs to display a meter for positioning AC sensor clamps. 
       void displayaverages(int cursensor);    // Debugging function to display values polled for given sensor
+      float GetOffReading(int sensor);        // Get the off reading for a specific sensor
+      float GetAvgReading(int sensor);        // Get the average reading for a specific sensor
       static const int num_ac_sensors = NUM_AC_SENSORS;
   };
   

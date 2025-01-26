@@ -4,9 +4,21 @@
 #include "AcSensors.h"
 
   AcSensors::AcSensors()
-  { 
+  {
+    DPRINTLN("AC Sensors object created");
   }
-   
+  
+  float AcSensors::GetOffReading(int sensor) {
+      if (sensor >= 0 && sensor < num_ac_sensors) {
+          return offReadings[sensor];
+      }
+      return 0;
+  }
+  
+  float AcSensors::GetAvgReading(int sensor) {
+      return AvgSensorReading(sensor);
+  }
+  
   //////////////////////////////////////////////////////////////////////
   // InitializeSensors()
   //
@@ -15,13 +27,19 @@
   //////////////////////////////////////////////////////////////////////
   void AcSensors::InitializeSensors()
   {
-      for (int x = 0; x< num_ac_sensors; x++)
-      pinMode( ledpin[x], OUTPUT);
+      DPRINTLN("Initializing AC sensors...");
+      DPRINT("Number of sensors: "); DPRINTLN(num_ac_sensors);
       
-      DPRINTLN("Getting Sensor Readings");
+      for (int x = 0; x< num_ac_sensors; x++) {
+          DPRINT("Setting up LED pin "); DPRINT(ledpin[x]); DPRINTLN(" as OUTPUT");
+          pinMode(ledpin[x], OUTPUT);
+      }
+      
+      DPRINTLN("Getting baseline sensor readings...");
       //getAvgOffSensorReadings();
   
       getMaxOffSensorReadings();
+      DPRINTLN("AC sensor initialization complete");
   }
 
 

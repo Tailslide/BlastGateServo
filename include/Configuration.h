@@ -5,7 +5,9 @@
 
 // All user defined settings required to configure operation are in this file
 
-//#define DEBUG   //Enable debug output
+#ifndef DEBUG
+#define DEBUG   //Enable debug output
+#endif
 //#define DEBUGMETER // debug meter mode for placing sensors on cables
 
 
