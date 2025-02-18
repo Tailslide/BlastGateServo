@@ -30,7 +30,11 @@
 
 
 // Blink timing for meter mode (in milliseconds)
-#define MAX_BLINK_LEN 200 // consistent blink rate for both debug and release modes
+#ifdef DEBUG
+#define MAX_BLINK_LEN 50  // faster blink in debug mode to compensate for serial delay
+#else
+#define MAX_BLINK_LEN 200 // normal blink rate in release mode
+#endif
 
 // Servo Pins
 #define SERVO_PIN_1 12 // Pin for first blast gate servo
