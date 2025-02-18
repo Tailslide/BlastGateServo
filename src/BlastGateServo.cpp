@@ -24,7 +24,8 @@ int buttonState = 0;         // variable for reading the pushbutton status
 int lastbuttonpushms = 0;
 int curselectedgate = -1;
 bool waitingforbuttonrelease = false;
-bool metermode = false; 
+bool metermode = false;
+bool toolon = false;         // indicates if there is any current sensed
 
 static const bool has_button = HAS_BUTTON;
 static const int buttonPin = BUTTON_PIN;
@@ -40,16 +41,38 @@ void setup() {
   DPRINTLN("BlastGateServo starting...");
   #endif
 
+  // Check for meter mode first
+  if (has_button) {
+      pinMode(buttonPin, INPUT_PULLUP);
+      delay(100); // Give pin time to stabilize
+      
+      if (digitalRead(buttonPin) == LOW) {
+          metermode = true;
+          DPRINTLN("Entering meter mode - Use LEDs to calibrate AC sensor positions");
+      } else {
+          metermode = false;
+      }
+  }
+
+  #ifdef DEBUGMETER
+      metermode = true;
+  #endif
+
+  // Initialize sensors before anything else
+  acsensors.InitializeSensors();
+
+  // Initialize gates if not in meter mode
+  if (!metermode) {
+      gateservos.initializeGates();
+  }
+
   #ifdef DEBUG_LED_TEST
-  // Initialize LED pins and button for test mode
+  // Initialize LED pins for test mode
   pinMode(LED_PIN_1, OUTPUT);
   pinMode(LED_PIN_2, OUTPUT);
   pinMode(LED_PIN_3, OUTPUT);
   pinMode(LED_PIN_4, OUTPUT);
   pinMode(LED_PIN_5, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
-  DPRINTLN("Button configured on pin: ");
-  DPRINTLN(BUTTON_PIN);
   
   // Start with all LEDs off
   digitalWrite(LED_PIN_1, LOW);
@@ -61,22 +84,9 @@ void setup() {
   DPRINTLN("LED Test Mode Active - Press button to light all LEDs");
   #else
   gateservos.initializeGates();
-
-  // initialize the pushbutton pin as an input:
-  if (has_button) pinMode(buttonPin, INPUT_PULLUP);
-  
-  if (digitalRead(buttonPin) == LOW) { // user held down button on startup, go into meter mode (LOW = pressed with INPUT_PULLUP)
-      metermode = true;
-      DPRINTLN("Entering meter mode - Use LEDs to calibrate AC sensor positions");
-  } else {
-      metermode = false;
-  }
-
-  #ifdef DEBUGMETER
-      metermode = true;
   #endif
+
   acsensors.InitializeSensors();
-  #endif
 }
 
 
@@ -131,7 +141,10 @@ void loop()
 
   acsensors.ReadSensors(); // read all the AC current sensors
   
-  if (metermode)  acsensors.DisplayMeter();  // if user put device into meter mode, use LED lights to display sensor signal.
+  if (metermode) {
+      acsensors.DisplayMeter();  // if user put device into meter mode, use LED lights to display sensor signal.
+      return; // Don't process any other logic in meter mode
+  }
   else // not meter mode
   {
     for (int cursensor=0; cursensor < acsensors.num_ac_sensors; cursensor++)

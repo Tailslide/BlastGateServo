@@ -127,9 +127,37 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
         DPRINT("Sensor #"); DPRINT(cursensor + 1); DPRINT(": ");
         int avgthissensor =  AvgSensorReading(cursensor);
         //float percent = avgthissensor / 4.5;
-        float percent = (float)(avgthissensor-offReadings[cursensor]) / (920 - offReadings[cursensor]);
-        blinktimers[cursensor] += 1; 
-        int blinklen = maxblinklen * (1-percent);
+        // Calculate the signal strength relative to baseline
+        float delta = avgthissensor - offReadings[cursensor];
+        
+        // Only consider positive changes from baseline
+        float percent = 0;
+        if (delta > 0) {
+            percent = delta / (1023 - offReadings[cursensor]);
+            if (percent > 1) percent = 1;
+        }
+        
+        // Debug raw values
+        DPRINT(" Raw: "); DPRINT(avgthissensor);
+        DPRINT(" Baseline: "); DPRINT(offReadings[cursensor]);
+        DPRINT(" Delta: "); DPRINT(delta);
+        
+        // Calculate blink length based on signal strength
+        int blinklen = maxblinklen;  // Default to slow blink for no signal
+        if (delta > 0) {
+          blinklen = maxblinklen * (1 - (delta / 1023.0));
+          if (blinklen < 10) blinklen = 10;  // Minimum blink time to prevent flicker
+        }
+        
+        // Increment blink timer
+        blinktimers[cursensor]++;
+        
+        // Toggle LED state when timer reaches blink length
+        if (blinktimers[cursensor] >= blinklen) {
+          blinktimers[cursensor] = 0;
+          blinkon[cursensor] = !blinkon[cursensor];
+          digitalWrite(ledpin[cursensor], blinkon[cursensor] ? HIGH : LOW);
+        }
   
         // print out the value you read:
         DPRINT(percent);

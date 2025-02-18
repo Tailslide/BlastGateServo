@@ -5,9 +5,9 @@
 
 // All user defined settings required to configure operation are in this file
 
-#ifndef DEBUG
-#define DEBUG   //Enable debug output
-#endif
+//#ifndef DEBUG
+//#define DEBUG   //Enable debug output - set this in platformio.ini instead
+//#endif
 //#define DEBUGMETER // debug meter mode for placing sensors on cables
 //#define DEBUG_LED_TEST // Enable LED test mode - flashes LEDs in sequence
 
@@ -20,20 +20,17 @@
 #define BUTTON_PIN 13    // the number of the pushbutton pin
 
 /// current Sensor stuff
-#define NUM_AC_SENSORS 4        // Number of AC sensors connected.. currently only handles 1 per gate
+#define NUM_AC_SENSORS 5        // Number of AC sensors connected.. currently only handles 1 per gate
 #define NUM_LEDS 5              // Number of LEDs connected.. optional but should be 1 per gate
-#define NUM_GATES 4             // Number of blast gates with servos connected
+#define NUM_GATES 5             // Number of blast gates with servos connected
 #define NUM_OFF_SAMPLES 50      // number of samples when checking avg sensor off values (unused)
 #define NUM_OFF_MAX_SAMPLES 500 // Milliseconds to sample for max off value for each gate when starting up
 #define AVG_READINGS 25         // number of readings to average when triggering gates.. higher number is more accurate but more delay ( no more than 50)
 #define AC_SENSOR_SENSITIVITY 2.0 // Triggers on twice the max readings of the off setting. The closer to one, the more sensitive
 
 
-#ifdef DEBUG
-#define MAX_BLINK_LEN 10 // blink faster when debugging to serial since slower
-#else
-#define MAX_BLINK_LEN 1000 / NUM_AC_SENSORS // slowest blink rate in ms
-#endif
+// Blink timing for meter mode (in milliseconds)
+#define MAX_BLINK_LEN 200 // consistent blink rate for both debug and release modes
 
 // Servo Pins
 #define SERVO_PIN_1 12 // Pin for first blast gate servo
@@ -50,7 +47,7 @@
 #define AC_SENSOR_PIN_2 A1 // ..etc...
 #define AC_SENSOR_PIN_3 A2
 #define AC_SENSOR_PIN_4 A3
-#define AC_SENSOR_PIN_5 -1
+#define AC_SENSOR_PIN_5 A4
 #define AC_SENSOR_PIN_6 -1
 #define AC_SENSOR_PIN_7 -1
 #define AC_SENSOR_PIN_8 -1
