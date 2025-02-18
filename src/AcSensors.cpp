@@ -3,6 +3,8 @@
 #include "Configuration.h"
 #include "AcSensors.h"
 
+const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
+
   AcSensors::AcSensors()
   {
     DPRINTLN("AC Sensors object created");
@@ -119,8 +121,10 @@
   //////////////////////////////////////////////////////////////////////  
   void AcSensors::DisplayMeter()
   {
+      DPRINTLN("\n--- Meter Mode Readings ---");
       for (int cursensor= 0; cursensor < num_ac_sensors; cursensor++)
       {
+        DPRINT("Sensor #"); DPRINT(cursensor + 1); DPRINT(": ");
         int avgthissensor =  AvgSensorReading(cursensor);
         //float percent = avgthissensor / 4.5;
         float percent = (float)(avgthissensor-offReadings[cursensor]) / (920 - offReadings[cursensor]);

@@ -63,11 +63,14 @@ void setup() {
   gateservos.initializeGates();
 
   // initialize the pushbutton pin as an input:
-  if (has_button) pinMode(buttonPin, INPUT);
+  if (has_button) pinMode(buttonPin, INPUT_PULLUP);
   
-  if (digitalRead(buttonPin)== HIGH) // user held down button on startup, go into meter mode
+  if (digitalRead(buttonPin) == LOW) { // user held down button on startup, go into meter mode (LOW = pressed with INPUT_PULLUP)
       metermode = true;
-  else metermode = false;
+      DPRINTLN("Entering meter mode - Use LEDs to calibrate AC sensor positions");
+  } else {
+      metermode = false;
+  }
 
   #ifdef DEBUGMETER
       metermode = true;

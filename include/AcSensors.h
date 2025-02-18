@@ -31,7 +31,7 @@
     static const int led_pin_7 = LED_PIN_7;
     static const int led_pin_8 = LED_PIN_8;
     
-    static const float acsensorsentitivity = AC_SENSOR_SENSITIVITY;
+    static const float acsensorsentitivity;
     static const int numoffmaxsamples = NUM_OFF_MAX_SAMPLES;
     static const int maxblinklen = MAX_BLINK_LEN;
     static const int numoffsamples = NUM_OFF_SAMPLES;

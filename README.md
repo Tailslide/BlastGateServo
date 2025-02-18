@@ -36,7 +36,16 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
 
 ## Operation Modes
 * Normal Mode: Use the push button to cycle through gates. After selecting a gate, wait briefly and it will open automatically.
-* Meter Mode: For calibrating AC sensors. Enter this mode by holding the button while powering up the Arduino.
+* Meter Mode: For calibrating AC sensors:
+  1. Power off the Arduino
+  2. Press and hold the button
+  3. While holding the button, power on the Arduino
+  4. Release the button after power-up
+  5. LEDs will now act as signal strength indicators:
+     - Each LED corresponds to an AC sensor
+     - Turn on a device on the cable being calibrated
+     - Rotate the sensor clamp around the cable
+     - LED will blink faster (or become solid) when sensor is optimally positioned
 * Debug Mode: Enable detailed serial output by setting DEBUG flag (enabled by default)
 * LED Test Mode: Enable by uncommenting DEBUG_LED_TEST in Configuration.h. Flashes each LED in sequence to verify connections.
 
