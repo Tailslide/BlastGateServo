@@ -1,3 +1,10 @@
+#include <Arduino.h>
+#include <Servo.h>
+#include "Debug.h"
+#include "Configuration.h"
+#include "GateServos.h"
+#include "AcSensors.h"
+
 /*  Blast gate servo controller for Arduino
  *   
  *   Allows a single push button to switch between different blast gates, with only a single one open at a time.
@@ -12,11 +19,6 @@
  *   Created 2019-01-02 - Greg Pringle
  *   Updated 2019-01-20 - Greg Pringle - Refactored, added support for AC current sensor
  */
-#include <Servo.h>
-#include "Debug.h"
-#include "Configuration.h"
-#include "GateServos.h"
-#include "AcSensors.h"
 
 int buttonState = 0;         // variable for reading the pushbutton status
 int lastbuttonpushms = 0;
@@ -29,7 +31,7 @@ static const int buttonPin = BUTTON_PIN;
 static const bool hasbutton = HAS_BUTTON;  
 
 GateServos gateservos(-1);  // object controlling blast gate servos
-AcSensors acsensors;        // objest controlling AC current sensors
+AcSensors acsensors;        // object controlling AC current sensors
 
 void setup() {
   #ifdef DEBUG
@@ -38,6 +40,26 @@ void setup() {
   DPRINTLN("BlastGateServo starting...");
   #endif
 
+  #ifdef DEBUG_LED_TEST
+  // Initialize LED pins and button for test mode
+  pinMode(LED_PIN_1, OUTPUT);
+  pinMode(LED_PIN_2, OUTPUT);
+  pinMode(LED_PIN_3, OUTPUT);
+  pinMode(LED_PIN_4, OUTPUT);
+  pinMode(LED_PIN_5, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);  // Use internal pull-up resistor
+  DPRINTLN("Button configured on pin: ");
+  DPRINTLN(BUTTON_PIN);
+  
+  // Start with all LEDs off
+  digitalWrite(LED_PIN_1, LOW);
+  digitalWrite(LED_PIN_2, LOW);
+  digitalWrite(LED_PIN_3, LOW);
+  digitalWrite(LED_PIN_4, LOW);
+  digitalWrite(LED_PIN_5, LOW);
+  
+  DPRINTLN("LED Test Mode Active - Press button to light all LEDs");
+  #else
   gateservos.initializeGates();
 
   // initialize the pushbutton pin as an input:
@@ -51,11 +73,57 @@ void setup() {
       metermode = true;
   #endif
   acsensors.InitializeSensors();
+  #endif
 }
 
 
-void loop() 
+void loop()
 {
+  #ifdef DEBUG_LED_TEST
+  // LED test pattern - flash each LED in sequence or all on when button pressed
+  static int currentLed = 0;
+  static unsigned long lastChange = 0;
+  const int testDelay = 500; // 500ms on/off time
+
+  // Check button state (LOW when pressed due to pull-up resistor)
+  int btnState = digitalRead(BUTTON_PIN);
+  DPRINT("Button state: ");
+  DPRINTLN(btnState);
+  
+  if (btnState == LOW) {
+    // Button pressed (reads LOW with pull-up) - turn on all LEDs
+    digitalWrite(LED_PIN_1, HIGH);
+    digitalWrite(LED_PIN_2, HIGH);
+    digitalWrite(LED_PIN_3, HIGH);
+    digitalWrite(LED_PIN_4, HIGH);
+    digitalWrite(LED_PIN_5, HIGH);
+  } else {
+    // Button not pressed - do sequential pattern
+    if (millis() - lastChange >= testDelay) {
+      // Turn off all LEDs first
+      digitalWrite(LED_PIN_1, LOW);
+      digitalWrite(LED_PIN_2, LOW);
+      digitalWrite(LED_PIN_3, LOW);
+      digitalWrite(LED_PIN_4, LOW);
+      digitalWrite(LED_PIN_5, LOW);
+
+      // Turn on only the current LED
+      switch(currentLed) {
+        case 0: digitalWrite(LED_PIN_1, HIGH); break;
+        case 1: digitalWrite(LED_PIN_2, HIGH); break;
+        case 2: digitalWrite(LED_PIN_3, HIGH); break;
+        case 3: digitalWrite(LED_PIN_4, HIGH); break;
+        case 4: digitalWrite(LED_PIN_5, HIGH); break;
+      }
+
+      // Move to next LED
+      currentLed = (currentLed + 1) % 5; // Use explicit 5 instead of NUM_LEDS
+      lastChange = millis();
+    }
+  }
+  return; // Skip normal operation when in LED test mode
+  #endif
+
   bool toolon = false; // indicates if there is any current sensed
 
   acsensors.ReadSensors(); // read all the AC current sensors

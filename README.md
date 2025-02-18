@@ -38,6 +38,7 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
 * Normal Mode: Use the push button to cycle through gates. After selecting a gate, wait briefly and it will open automatically.
 * Meter Mode: For calibrating AC sensors. Enter this mode by holding the button while powering up the Arduino.
 * Debug Mode: Enable detailed serial output by setting DEBUG flag (enabled by default)
+* LED Test Mode: Enable by uncommenting DEBUG_LED_TEST in Configuration.h. Flashes each LED in sequence to verify connections.
 
 ## Configuration
 All settings can be adjusted in Configuration.h:
@@ -69,14 +70,14 @@ All settings can be adjusted in Configuration.h:
 * SERVO_MIN_x - Open position for each servo (0-180 degrees)
 
 ## Project Structure
-* BlastGateServo.ino - Main program file with setup and loop
-* Configuration.h - All user configurable settings
-* GateServos.h/cpp - Servo control and position management
-* AcSensors.h/cpp - AC current sensor reading and threshold detection
-* Debug.h - Debug output macros and configuration
+* src/BlastGateServo.cpp - Main program file with setup and loop
+* include/Configuration.h - All user configurable settings
+* include/GateServos.h/cpp - Servo control and position management
+* include/AcSensors.h/cpp - AC current sensor reading and threshold detection
+* include/Debug.h - Debug output macros and configuration
 * platformio.ini - PlatformIO project configuration and library dependencies
 
 Created 2019-01-02 - Greg Pringle
 Updated 2019-01-20 - Greg Pringle - Added AC sensor support
 Updated 2025-01-26 - Added VSCode/PlatformIO support
-Updated 2025-02-16 - Added detailed configuration documentation
+Updated 2025-02-16 - Added detailed configuration documentation and converted to proper C++ structure
