@@ -1,4 +1,3 @@
-
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H 
 #define CONFIGURATION_H_VERSION 01
@@ -10,6 +9,7 @@
 //#endif
 //#define DEBUGMETER // debug meter mode for placing sensors on cables
 //#define DEBUG_LED_TEST // Enable LED test mode - flashes LEDs in sequence
+#define DEBUG_SERVO_TEST // Enable servo test mode - opens/closes first servo with button press
 
 
 // servo stuff 

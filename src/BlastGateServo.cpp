@@ -41,17 +41,31 @@ void setup() {
   DPRINTLN("BlastGateServo starting...");
   #endif
 
-  // Check for meter mode first
+  // Set up button pin for all modes
   if (has_button) {
       pinMode(buttonPin, INPUT_PULLUP);
       delay(100); // Give pin time to stabilize
-      
-      if (digitalRead(buttonPin) == LOW) {
-          metermode = true;
-          DPRINTLN("Entering meter mode - Use LEDs to calibrate AC sensor positions");
-      } else {
-          metermode = false;
-      }
+  }
+
+  #ifdef DEBUG_SERVO_TEST
+  // For servo test mode, we only need to set up the button
+  // and initialize the first servo pin
+  DPRINTLN("Servo Test Mode Active - Press button to toggle first servo");
+  
+  // Initialize just the first servo pin for LED
+  pinMode(LED_PIN_1, OUTPUT);
+  digitalWrite(LED_PIN_1, LOW);
+  
+  // Skip all other initialization
+  return;
+  #endif
+
+  // Check for meter mode
+  if (has_button && digitalRead(buttonPin) == LOW) {
+      metermode = true;
+      DPRINTLN("Entering meter mode - Use LEDs to calibrate AC sensor positions");
+  } else {
+      metermode = false;
   }
 
   #ifdef DEBUGMETER
@@ -85,8 +99,6 @@ void setup() {
   #else
   gateservos.initializeGates();
   #endif
-
-  acsensors.InitializeSensors();
 }
 
 
@@ -135,6 +147,53 @@ void loop()
     }
   }
   return; // Skip normal operation when in LED test mode
+  #endif
+
+  #ifdef DEBUG_SERVO_TEST
+  // Servo test mode - open/close first servo with button press
+  static bool servoOpen = false;
+  static bool lastButtonState = HIGH;
+  static Servo testServo;  // Local servo object for test mode
+  
+  // Check button state (LOW when pressed due to pull-up resistor)
+  int btnState = digitalRead(BUTTON_PIN);
+  
+  // Button state changed from HIGH to LOW (button pressed)
+  if (btnState == LOW && lastButtonState == HIGH) {
+    DPRINTLN("Button pressed in servo test mode");
+    
+    // Toggle servo state and LED
+    if (servoOpen) {
+      // Close the servo
+      DPRINTLN("Closing servo 0");
+      digitalWrite(LED_PIN_1, LOW);
+      
+      // Direct servo control without using gateservos
+      testServo.attach(SERVO_PIN_1);
+      testServo.write(SERVO_MAX_1);
+      delay(CLOSE_DELAY);
+      testServo.detach();
+      
+      servoOpen = false;
+    } else {
+      // Open the servo
+      DPRINTLN("Opening servo 0");
+      digitalWrite(LED_PIN_1, HIGH);
+      
+      // Direct servo control without using gateservos
+      testServo.attach(SERVO_PIN_1);
+      testServo.write(SERVO_MIN_1);
+      delay(OPEN_DELAY);
+      testServo.detach();
+      
+      servoOpen = true;
+    }
+    
+    delay(200); // Debounce delay
+  }
+  
+  lastButtonState = btnState;
+  return; // Skip normal operation when in servo test mode
   #endif
 
   bool toolon = false; // indicates if there is any current sensed
