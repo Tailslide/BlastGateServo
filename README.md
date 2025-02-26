@@ -48,7 +48,7 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
      - LED will blink faster (or become solid) when sensor is optimally positioned
 * Debug Mode: Enable detailed serial output by setting DEBUG flag (enabled by default)
 * LED Test Mode: Enable by uncommenting DEBUG_LED_TEST in Configuration.h. Flashes each LED in sequence to verify connections.
-* Servo Test Mode: Enable by uncommenting DEBUG_SERVO_TEST in Configuration.h. Opens and closes the first servo with each button press without initializing other components. Useful for testing servo functionality and calibration.
+* Servo Test Mode: Enable by uncommenting DEBUG_SERVO_TEST in Configuration.h. Opens and closes a specified servo with each button press without initializing other components. Set TEST_SERVO_INDEX in Configuration.h to select which servo to test (1 = first servo, 2 = second servo, etc.). Useful for testing servo functionality and calibration.
 
 ## Configuration
 All settings can be adjusted in Configuration.h:

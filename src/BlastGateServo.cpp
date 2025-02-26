@@ -49,12 +49,24 @@ void setup() {
 
   #ifdef DEBUG_SERVO_TEST
   // For servo test mode, we only need to set up the button
-  // and initialize the first servo pin
-  DPRINTLN("Servo Test Mode Active - Press button to toggle first servo");
+  // and initialize the servo pin for the selected servo
+  DPRINT("Servo Test Mode Active - Press button to toggle servo ");
+  DPRINTLN(TEST_SERVO_INDEX);
   
-  // Initialize just the first servo pin for LED
-  pinMode(LED_PIN_1, OUTPUT);
-  digitalWrite(LED_PIN_1, LOW);
+  // Initialize just the LED pin for the selected servo
+  int ledPin;
+  // Adjust for 1-based indexing in display but 0-based indexing in arrays
+  switch(TEST_SERVO_INDEX - 1) {
+    case 0: ledPin = LED_PIN_1; break;
+    case 1: ledPin = LED_PIN_2; break;
+    case 2: ledPin = LED_PIN_3; break;
+    case 3: ledPin = LED_PIN_4; break;
+    case 4: ledPin = LED_PIN_5; break;
+    default: ledPin = LED_PIN_1; break;
+  }
+  
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
   
   // Skip all other initialization
   return;
@@ -150,10 +162,69 @@ void loop()
   #endif
 
   #ifdef DEBUG_SERVO_TEST
-  // Servo test mode - open/close first servo with button press
+  // Servo test mode - open/close selected servo with button press
   static bool servoOpen = false;
   static bool lastButtonState = HIGH;
   static Servo testServo;  // Local servo object for test mode
+  
+  // Get the pin configurations for the selected servo
+  static int servoPin, servoMax, servoMin, ledPin;
+  static bool configPrinted = false;
+  
+  // Only set up the configuration once
+  if (!configPrinted) {
+    // Adjust for 1-based indexing in display but 0-based indexing in arrays
+    switch(TEST_SERVO_INDEX - 1) {
+      case 0:
+        servoPin = SERVO_PIN_1;
+        servoMax = SERVO_MAX_1;
+        servoMin = SERVO_MIN_1;
+        ledPin = LED_PIN_1;
+        break;
+      case 1:
+        servoPin = SERVO_PIN_2;
+        servoMax = SERVO_MAX_2;
+        servoMin = SERVO_MIN_2;
+        ledPin = LED_PIN_2;
+        break;
+      case 2:
+        servoPin = SERVO_PIN_3;
+        servoMax = SERVO_MAX_3;
+        servoMin = SERVO_MIN_3;
+        ledPin = LED_PIN_3;
+        break;
+      case 3:
+        servoPin = SERVO_PIN_4;
+        servoMax = SERVO_MAX_4;
+        servoMin = SERVO_MIN_4;
+        ledPin = LED_PIN_4;
+        break;
+      case 4:
+        servoPin = SERVO_PIN_5;
+        servoMax = SERVO_MAX_5;
+        servoMin = SERVO_MIN_5;
+        ledPin = LED_PIN_5;
+        break;
+      default:
+        servoPin = SERVO_PIN_1;
+        servoMax = SERVO_MAX_1;
+        servoMin = SERVO_MIN_1;
+        ledPin = LED_PIN_1;
+        break;
+    }
+    
+    // Print debug info about the selected servo (only once)
+    DPRINT("Servo ");
+    DPRINT(TEST_SERVO_INDEX);
+    DPRINT(" configuration - Pin: ");
+    DPRINT(servoPin);
+    DPRINT(", Max (closed): ");
+    DPRINT(servoMax);
+    DPRINT(", Min (open): ");
+    DPRINTLN(servoMin);
+    
+    configPrinted = true;
+  }
   
   // Check button state (LOW when pressed due to pull-up resistor)
   int btnState = digitalRead(BUTTON_PIN);
@@ -165,24 +236,30 @@ void loop()
     // Toggle servo state and LED
     if (servoOpen) {
       // Close the servo
-      DPRINTLN("Closing servo 0");
-      digitalWrite(LED_PIN_1, LOW);
+      DPRINT("Closing servo ");
+      DPRINT(TEST_SERVO_INDEX);
+      DPRINT(" - Setting position to ");
+      DPRINTLN(servoMax);
+      digitalWrite(ledPin, LOW);
       
       // Direct servo control without using gateservos
-      testServo.attach(SERVO_PIN_1);
-      testServo.write(SERVO_MAX_1);
+      testServo.attach(servoPin);
+      testServo.write(servoMax);
       delay(CLOSE_DELAY);
       testServo.detach();
       
       servoOpen = false;
     } else {
       // Open the servo
-      DPRINTLN("Opening servo 0");
-      digitalWrite(LED_PIN_1, HIGH);
+      DPRINT("Opening servo ");
+      DPRINT(TEST_SERVO_INDEX);
+      DPRINT(" - Setting position to ");
+      DPRINTLN(servoMin);
+      digitalWrite(ledPin, HIGH);
       
       // Direct servo control without using gateservos
-      testServo.attach(SERVO_PIN_1);
-      testServo.write(SERVO_MIN_1);
+      testServo.attach(servoPin);
+      testServo.write(servoMin);
       delay(OPEN_DELAY);
       testServo.detach();
       

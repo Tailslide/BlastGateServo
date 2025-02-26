@@ -9,7 +9,8 @@
 //#endif
 //#define DEBUGMETER // debug meter mode for placing sensors on cables
 //#define DEBUG_LED_TEST // Enable LED test mode - flashes LEDs in sequence
-#define DEBUG_SERVO_TEST // Enable servo test mode - opens/closes first servo with button press
+#define DEBUG_SERVO_TEST // Enable servo test mode - opens/closes a servo with button press
+#define TEST_SERVO_INDEX 5 // Which servo to test (1 = first servo, 2 = second servo, etc.)
 
 
 // servo stuff 
@@ -38,10 +39,10 @@
 
 // Servo Pins
 #define SERVO_PIN_1 12 // Pin for first blast gate servo
-#define SERVO_PIN_2 10 // ...etc..
-#define SERVO_PIN_3 8
+#define SERVO_PIN_2 11 // ...etc..
+#define SERVO_PIN_3 10
 #define SERVO_PIN_4 9
-#define SERVO_PIN_5 -1
+#define SERVO_PIN_5 8
 #define SERVO_PIN_6 -1
 #define SERVO_PIN_7 -1
 #define SERVO_PIN_8 -1
@@ -56,7 +57,6 @@
 #define AC_SENSOR_PIN_7 -1
 #define AC_SENSOR_PIN_8 -1
 
-
 // Servo Max (Closed) positions.. maximum close position representing closed.
 // It's ok to leave at default and for the servo to try to close too far but it will increase the power load
 //
@@ -64,7 +64,7 @@
 #define SERVO_MAX_2 180
 #define SERVO_MAX_3 180
 #define SERVO_MAX_4 180
-#define SERVO_MAX_5 -1
+#define SERVO_MAX_5 180
 #define SERVO_MAX_6 -1
 #define SERVO_MAX_7 -1
 #define SERVO_MAX_8 -1
@@ -76,7 +76,7 @@
 #define SERVO_MIN_2 0
 #define SERVO_MIN_3 0
 #define SERVO_MIN_4 0
-#define SERVO_MIN_5 -1
+#define SERVO_MIN_5 0
 #define SERVO_MIN_6 -1
 #define SERVO_MIN_7 -1
 #define SERVO_MIN_8 -1
