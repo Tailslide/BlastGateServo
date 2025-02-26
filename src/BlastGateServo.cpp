@@ -223,6 +223,12 @@ void loop()
     DPRINT(", Min (open): ");
     DPRINTLN(servoMin);
     
+    // Add a warning if the servo pin is disabled
+    if (servoPin == -1) {
+      DPRINTLN("WARNING: Selected servo pin is disabled (-1)");
+      DPRINTLN("LED will still work but servo will not move");
+    }
+    
     configPrinted = true;
   }
   
@@ -242,11 +248,18 @@ void loop()
       DPRINTLN(servoMax);
       digitalWrite(ledPin, LOW);
       
-      // Direct servo control without using gateservos
-      testServo.attach(servoPin);
-      testServo.write(servoMax);
-      delay(CLOSE_DELAY);
-      testServo.detach();
+      // Only control the servo if the pin is valid (not -1)
+      if (servoPin != -1) {
+        // Direct servo control without using gateservos
+        testServo.attach(servoPin);
+        testServo.write(servoMax);
+        delay(CLOSE_DELAY);
+        testServo.detach();
+        DPRINTLN("Servo closed");
+      } else {
+        DPRINTLN("Skipped servo (pin disabled)");
+        delay(CLOSE_DELAY); // still delay for consistency
+      }
       
       servoOpen = false;
     } else {
@@ -257,11 +270,18 @@ void loop()
       DPRINTLN(servoMin);
       digitalWrite(ledPin, HIGH);
       
-      // Direct servo control without using gateservos
-      testServo.attach(servoPin);
-      testServo.write(servoMin);
-      delay(OPEN_DELAY);
-      testServo.detach();
+      // Only control the servo if the pin is valid (not -1)
+      if (servoPin != -1) {
+        // Direct servo control without using gateservos
+        testServo.attach(servoPin);
+        testServo.write(servoMin);
+        delay(OPEN_DELAY);
+        testServo.detach();
+        DPRINTLN("Servo opened");
+      } else {
+        DPRINTLN("Skipped servo (pin disabled)");
+        delay(OPEN_DELAY); // still delay for consistency
+      }
       
       servoOpen = true;
     }

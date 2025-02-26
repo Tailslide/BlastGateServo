@@ -12,7 +12,7 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
 
 ## Hardware Requirements
 * Arduino Uno (R3 or R4)
-* A servo for each blast gate (up to 4)
+* A servo for each blast gate (up to 5)
 * One push button
 * Optional: An LED for each blast gate
 * Optional: AC current sensors from http://moderndevice.com/current
@@ -48,13 +48,13 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
      - LED will blink faster (or become solid) when sensor is optimally positioned
 * Debug Mode: Enable detailed serial output by setting DEBUG flag (enabled by default)
 * LED Test Mode: Enable by uncommenting DEBUG_LED_TEST in Configuration.h. Flashes each LED in sequence to verify connections.
-* Servo Test Mode: Enable by uncommenting DEBUG_SERVO_TEST in Configuration.h. Opens and closes a specified servo with each button press without initializing other components. Set TEST_SERVO_INDEX in Configuration.h to select which servo to test (1 = first servo, 2 = second servo, etc.). Useful for testing servo functionality and calibration.
+* Servo Test Mode: Enable by uncommenting DEBUG_SERVO_TEST in Configuration.h. Opens and closes a specified servo with each button press without initializing other components. Set TEST_SERVO_INDEX in Configuration.h to select which servo to test (1 = first servo, 2 = second servo, etc.). Useful for testing servo functionality and calibration. The system will properly handle disabled servos (pins set to -1) by controlling only the LED while skipping servo movement.
 
 ## Configuration
 All settings can be adjusted in Configuration.h:
 
 ### Basic Settings
-* Number of gates (NUM_GATES) - up to 4 supported
+* Number of gates (NUM_GATES) - up to 5 supported
 * Number of AC sensors (NUM_AC_SENSORS) - typically one per gate
 * Number of LEDs (NUM_LEDS) - typically one per gate
 * Button pin assignment (BUTTON_PIN)
@@ -71,13 +71,16 @@ All settings can be adjusted in Configuration.h:
 * AC_SENSOR_SENSITIVITY - Trigger threshold multiplier (2.0 = twice max off reading)
 
 ### Pin Assignments
-* Servo pins (SERVO_PIN_1 through SERVO_PIN_4)
-* AC sensor pins (AC_SENSOR_PIN_1 through AC_SENSOR_PIN_4)
-* LED pins (LED_PIN_1 through LED_PIN_4)
+* Servo pins (SERVO_PIN_1 through SERVO_PIN_5)
+  * Set any servo pin to -1 to disable that servo while maintaining the gate numbering
+  * Example: Setting SERVO_PIN_2 to -1 disables the second servo but keeps gate 3 as "gate 3" in the UI
+* AC sensor pins (AC_SENSOR_PIN_1 through AC_SENSOR_PIN_5)
+* LED pins (LED_PIN_1 through LED_PIN_5)
 
 ### Servo Position Configuration
 * SERVO_MAX_x - Closed position for each servo (0-180 degrees)
 * SERVO_MIN_x - Open position for each servo (0-180 degrees)
+* Set any servo's MAX/MIN values even if the pin is disabled (-1) to maintain consistent configuration
 
 ## Project Structure
 * src/BlastGateServo.cpp - Main program file with setup and loop
@@ -91,3 +94,4 @@ Created 2019-01-02 - Greg Pringle
 Updated 2019-01-20 - Greg Pringle - Added AC sensor support
 Updated 2025-01-26 - Added VSCode/PlatformIO support
 Updated 2025-02-16 - Added detailed configuration documentation and converted to proper C++ structure
+Updated 2025-02-26 - Added support for disabling specific servos (set pin to -1) while maintaining gate numbering
