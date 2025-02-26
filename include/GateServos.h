@@ -70,10 +70,11 @@
       void ManuallyOpenGate(int gatenum);   // User manually opening given gate using the button
       int firstgateopen();                  // Returns ID of first gate that is open
       void testServo(int servopin);         // Test given servo pin (debug function)
-      const int num_gates = NUM_GATES;      // 
+      const int num_gates = NUM_GATES;      //
       int curopengate = -1;                 // cuurrently open gate selected manually with button
       const int opendelay = OPEN_DELAY;     // ms delay to allow servo to completely open gate
       bool gateopen[8] = {false, false, false, false,false, false, false, false};   // array indicating which gates are open
+      bool isGateDisabled(int gatenum);     // Check if a gate is disabled (servo pin = -1)
   };
   
 

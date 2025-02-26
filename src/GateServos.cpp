@@ -201,3 +201,12 @@
   
     return -1;
   }
+  
+  // Check if a gate is disabled (servo pin = -1)
+  bool GateServos::isGateDisabled(int gatenum)
+  {
+    if (gatenum < 0 || gatenum >= num_gates) {
+      return false; // All gates closed option (-1) is not considered disabled
+    }
+    return servopin[gatenum] == -1;
+  }

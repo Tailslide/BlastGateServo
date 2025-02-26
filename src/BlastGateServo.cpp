@@ -394,11 +394,15 @@ void loop()
             // Turn off LED for previous selection
             gateservos.ledoff(curselectedgate);
             
-            // Move to next gate
-            curselectedgate++;
-            if (curselectedgate == gateservos.num_gates)
-              curselectedgate = -1;
-            else
+            // Move to next gate, skipping disabled gates
+            do {
+              curselectedgate++;
+              if (curselectedgate == gateservos.num_gates)
+                curselectedgate = -1;
+            } while (curselectedgate >= 0 && gateservos.isGateDisabled(curselectedgate));
+            
+            // Turn on LED for the selected gate (if not "all closed" option)
+            if (curselectedgate >= 0)
               gateservos.ledon(curselectedgate);
             
             // Display new selection that will be opened after delay
