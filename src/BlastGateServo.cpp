@@ -21,11 +21,16 @@
  */
 
 int buttonState = 0;         // variable for reading the pushbutton status
-int lastbuttonpushms = 0;
-int curselectedgate = -1;
-bool waitingforbuttonrelease = false;
-bool metermode = false;
+int curselectedgate = -1;    // Currently selected gate (-1 = all closed)
+bool metermode = false;      // Meter mode flag
 bool toolon = false;         // indicates if there is any current sensed
+
+// Button handling variables
+int lastButtonState = HIGH;  // Previous button state (HIGH = not pressed with pull-up)
+unsigned long lastDebounceTime = 0;  // Last time button state changed
+unsigned long debounceDelay = 50;    // Debounce time in milliseconds
+unsigned long gateOpenTimer = 0;     // Timer for gate opening delay
+bool gateSelectionActive = false;    // Flag to indicate a gate has been selected and waiting to open
 
 static const bool has_button = HAS_BUTTON;
 static const int buttonPin = BUTTON_PIN;
@@ -45,6 +50,15 @@ void setup() {
   if (has_button) {
       pinMode(buttonPin, INPUT_PULLUP);
       delay(100); // Give pin time to stabilize
+      
+      // Initialize button state to prevent false detection at startup
+      buttonState = digitalRead(buttonPin);
+      lastButtonState = buttonState;
+      lastDebounceTime = millis();
+      gateSelectionActive = false;
+      gateOpenTimer = 0;
+      
+      DPRINTLN("Button initialized");
   }
 
   #ifdef DEBUG_SERVO_TEST
@@ -92,6 +106,11 @@ void setup() {
       gateservos.initializeGates();
   }
 
+  #if !ENABLE_AC_SENSORS
+  // Print this message only once during setup
+  DPRINTLN("AC sensors disabled - using manual control only");
+  #endif
+
   #ifdef DEBUG_LED_TEST
   // Initialize LED pins for test mode
   pinMode(LED_PIN_1, OUTPUT);
@@ -108,9 +127,8 @@ void setup() {
   digitalWrite(LED_PIN_5, LOW);
   
   DPRINTLN("LED Test Mode Active - Press button to light all LEDs");
-  #else
-  gateservos.initializeGates();
   #endif
+  // Note: Removed duplicate initialization
 }
 
 
@@ -295,6 +313,8 @@ void loop()
 
   bool toolon = false; // indicates if there is any current sensed
 
+  #if ENABLE_AC_SENSORS
+  // Only process AC sensors if they are enabled
   acsensors.ReadSensors(); // read all the AC current sensors
   
   if (metermode) {
@@ -313,7 +333,7 @@ void loop()
           DPRINT(" TOOL ON #"); DPRINT(cursensor); DPRINT(" OFF READING:"); DPRINT(acsensors.GetOffReading(cursensor)); DPRINT(" AVG SENSOR READING:"); DPRINTLN(acsensors.GetAvgReading(cursensor));
 
           // ignore button if tool detected
-          waitingforbuttonrelease = false;
+          gateSelectionActive = false;
           toolon = true;
           if (curselectedgate != cursensor) curselectedgate = cursensor;
 
@@ -333,58 +353,127 @@ void loop()
             gateservos.gateopen[cursensor] = false;
             gateservos.ledoff(cursensor);
             DPRINT(" TOOL OFF #"); DPRINTLN(cursensor);
-            gateservos.closegate(cursensor);      
+            gateservos.closegate(cursensor);
             curselectedgate = gateservos.firstgateopen();  // change currently active gate to first open one
           }
         }
     }
-
-    // read the state of the pushbutton value.  
-    // Allow the user to light up the appropriate gate and pause before opening/closing the gates.
-    if (hasbutton) buttonState = digitalRead(buttonPin);
-    if (hasbutton && !toolon && buttonState == HIGH)
-    {
-      if (! waitingforbuttonrelease)
-      {
-        lastbuttonpushms = 0;
-        DPRINT("Button Pushed, curselectedgate= ");  DPRINTLN(curselectedgate);
-        gateservos.ledoff(curselectedgate);
-        curselectedgate++;
-        if (curselectedgate == gateservos.num_gates) 
-          curselectedgate = -1;
-        else
-          gateservos.ledon(curselectedgate);
-        waitingforbuttonrelease= true;
-      }
-    }
-    
-    if (hasbutton && !toolon && buttonState == LOW)
-    {
-      if (waitingforbuttonrelease)
-      {
-         waitingforbuttonrelease=false;
-         lastbuttonpushms = 0;
-      }
-    
-      if (lastbuttonpushms > gateservos.opendelay)
-      {    
-          gateservos.ManuallyOpenGate(curselectedgate);
-      }
-    }
   }
+  #else
+  // AC sensors are disabled, only manual control is available
+  // Debug message moved to setup
+  #endif
+
+    // Button handling with debounce and state machine
+    if (hasbutton && !toolon) {
+      // Read the current button state
+      int reading = digitalRead(buttonPin);
+      
+      // Check if button state has changed
+      if (reading != lastButtonState) {
+        // Reset debounce timer
+        lastDebounceTime = millis();
+      }
+      
+      // If button state has been stable for debounce period
+      if ((millis() - lastDebounceTime) > debounceDelay) {
+        // If button state has changed since last stable reading
+        if (reading != buttonState) {
+          buttonState = reading;
+          
+          // Button pressed (LOW with pull-up resistor)
+          if (buttonState == LOW) {
+            // Show the previous selection before changing it
+            if (curselectedgate == -1) {
+              DPRINTLN("Button Pressed - Previous selection: All gates closed");
+            } else {
+              DPRINT("Button Pressed - Previous selection: Gate #");
+              DPRINTLN(curselectedgate + 1);
+            }
+            
+            // Turn off LED for previous selection
+            gateservos.ledoff(curselectedgate);
+            
+            // Move to next gate
+            curselectedgate++;
+            if (curselectedgate == gateservos.num_gates)
+              curselectedgate = -1;
+            else
+              gateservos.ledon(curselectedgate);
+            
+            // Display new selection that will be opened after delay
+            if (curselectedgate == -1) {
+              DPRINTLN("New selection: All gates closed (will close all gates after delay)");
+            } else {
+              DPRINT("New selection: Gate #");
+              DPRINTLN(curselectedgate + 1);
+              DPRINTLN("(will open after delay)");
+            }
+          }
+          // Button released (HIGH with pull-up resistor)
+          else if (buttonState == HIGH) {
+            DPRINTLN("Button released, starting gate open timer");
+            gateSelectionActive = true;
+            gateOpenTimer = millis();
+          }
+        }
+      }
+      
+      // Update last button state
+      lastButtonState = reading;
+      
+      // If a gate is selected and we're waiting for the delay to open it
+      if (gateSelectionActive) {
+        // Calculate elapsed time
+        unsigned long elapsedTime = millis() - gateOpenTimer;
+        
+        // Debug output every 200ms to avoid flooding serial
+        if (elapsedTime % 200 < 50) {
+          DPRINT("Timer: ");
+          DPRINTLN(elapsedTime);
+          
+          DPRINT("Current selected gate: ");
+          if (curselectedgate == -1) {
+            DPRINTLN("All gates closed");
+          } else {
+            DPRINTLN(curselectedgate + 1);
+          }
+          
+          DPRINT("Current open gate: ");
+          if (gateservos.curopengate == -1) {
+            DPRINTLN("None");
+          } else {
+            DPRINTLN(gateservos.curopengate + 1);
+          }
+          
+          DPRINT("Threshold: ");
+          DPRINTLN(gateservos.opendelay);
+        }
+        
+        // Open the gate when we reach the threshold
+        if (elapsedTime >= gateservos.opendelay) {
+          DPRINTLN("Opening gate after delay");
+          
+          // Debug the gate we're about to open
+          if (curselectedgate == -1) {
+            DPRINTLN("Opening: All gates closed");
+          } else {
+            DPRINT("Opening: Gate #");
+            DPRINTLN(curselectedgate + 1);
+          }
+          
+          // Call the function to open/close gates
+          gateservos.ManuallyOpenGate(curselectedgate);
+          
+          // Reset gate selection
+          gateSelectionActive = false;
+        }
+      }
+    }
   
   if (metermode)
    delay(1);  // minimal delay while metering so we can collect as many samples as possible
-  else 
+  else
    delay(50);
-  if (!toolon)
-  {    
-     // User is picking which gate to open manually. this code 'debounces' the button so it only moves one at a time
-     //
-     if (curselectedgate == gateservos.curopengate) 
-        lastbuttonpushms = 0;
-     else
-        lastbuttonpushms +=50;
-  }
   
 }

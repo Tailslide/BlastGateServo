@@ -16,7 +16,7 @@
   void GateServos::opengate(int gatenum)
   {
       DPRINT("OPENING GATE #");
-      DPRINT(gatenum);
+      DPRINT(gatenum + 1); // Display as 1-based
       DPRINT(" SERVO PIN:");
       DPRINT(servopin[gatenum]);
       DPRINT(" VALUE:");
@@ -30,16 +30,27 @@
       
       // Only control the servo if the pin is valid (not -1)
       if (servopin[gatenum] != -1) {
+        // Ensure the servo is properly attached
         myservo.attach(servopin[gatenum]);  // attaches the servo
+        
+        // Debug the servo position
+        DPRINT("Setting servo to position: ");
+        DPRINTLN(minservo[gatenum]);
+        
+        // Move the servo to open position
         myservo.write(minservo[gatenum]); //open gate
-        delay(opendelay); // wait for gate to open
+        
+        // Wait for gate to open
+        delay(opendelay);
+        
+        // Detach the servo to prevent jitter
         myservo.detach();
+        
         DPRINTLN("OPENED GATE");
       } else {
         DPRINTLN("SKIPPED SERVO (PIN DISABLED)");
         delay(opendelay); // still delay for consistency
       }
-      //if (servopin[gatenum] ==12) testServo(12);
   }
 
 
@@ -47,7 +58,7 @@
   void GateServos::closegate(int gatenum)
   {
     DPRINT("CLOSING GATE #");
-    DPRINT(gatenum);
+    DPRINT(gatenum + 1); // Display as 1-based
     DPRINTLN("");
     
     digitalWrite(ledpin[gatenum], LOW);
@@ -96,7 +107,7 @@
      // Only control the servo if the pin is valid (not -1)
      if (servopin[thisgate] != -1) {
        DPRINT("Initializing gate #");
-       DPRINT(thisgate);
+       DPRINT(thisgate + 1); // Display as 1-based
        DPRINT(" on pin ");
        DPRINTLN(servopin[thisgate]);
        
@@ -106,7 +117,7 @@
        myservo.detach();
      } else {
        DPRINT("Skipping disabled gate #");
-       DPRINTLN(thisgate);
+       DPRINTLN(thisgate + 1); // Display as 1-based
        delay(100); // short delay for consistency
      }
      
@@ -129,34 +140,48 @@
   // User has pushed button to manually open given gate
   void GateServos::ManuallyOpenGate(int curselectedgate)
   {
-      if (curselectedgate == num_gates)
+      DPRINTLN("ManuallyOpenGate called");
+      
+      if (curselectedgate == -1)
       {
         // Close all gates option
+        DPRINTLN("Closing all gates");
         if (curopengate > -1) {
+          DPRINT("Closing gate #");
+          DPRINTLN(curopengate + 1);
           closegate(curopengate);
         }
-        curopengate=-1;
-        curselectedgate=-1;
+        curopengate = -1;
       }
       else
       {
         // First close the currently open gate (if any)
         if (curopengate > -1)
         {
-          DPRINT("Button Closing Gate= ");
-          DPRINTLN(curopengate);
+          DPRINT("Closing gate #");
+          DPRINTLN(curopengate + 1);
           closegate(curopengate);
         }
         
         // Then open the selected gate
         curopengate = curselectedgate;
-        DPRINT("Button Opening Gate= ");
-        DPRINTLN(curopengate);
+        DPRINT("Opening gate #");
+        DPRINTLN(curopengate + 1);
+        
+        // Debug the servo pin
+        DPRINT("Using servo pin: ");
+        DPRINTLN(servopin[curopengate]);
+        
+        // Debug the servo position
+        DPRINT("Target position: ");
+        DPRINTLN(minservo[curopengate]);
         
         // Even if the servo pin is disabled (-1), we still update the state
         // and control the LED to maintain the user-facing gate numbering
         opengate(curopengate);
       }
+      
+      DPRINTLN("ManuallyOpenGate completed");
   }
   
   // return index of first open gate or -1 for none
@@ -169,7 +194,7 @@
           return curgate;
         } else {
           DPRINT("Skipping disabled gate #");
-          DPRINTLN(curgate);
+          DPRINTLN(curgate + 1); // Display as 1-based
         }
       }
     }

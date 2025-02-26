@@ -95,3 +95,5 @@ Updated 2019-01-20 - Greg Pringle - Added AC sensor support
 Updated 2025-01-26 - Added VSCode/PlatformIO support
 Updated 2025-02-16 - Added detailed configuration documentation and converted to proper C++ structure
 Updated 2025-02-26 - Added support for disabling specific servos (set pin to -1) while maintaining gate numbering
+Updated 2025-02-26 - Fixed button timing logic to properly open gates after selection
+Updated 2025-02-26 - Improved timer logic to ensure gates open/close reliably, reduced OPEN_DELAY to 800ms

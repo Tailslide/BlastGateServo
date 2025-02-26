@@ -9,13 +9,16 @@
 //#endif
 //#define DEBUGMETER // debug meter mode for placing sensors on cables
 //#define DEBUG_LED_TEST // Enable LED test mode - flashes LEDs in sequence
-#define DEBUG_SERVO_TEST // Enable servo test mode - opens/closes a servo with button press
-#define TEST_SERVO_INDEX 5 // Which servo to test (1 = first servo, 2 = second servo, etc.)
+//#define DEBUG_SERVO_TEST // Enable servo test mode - opens/closes a servo with button press
+#define TEST_SERVO_INDEX 2 // Which servo to test (1 = first servo, 2 = second servo, etc.)
+
+// Set to false to disable AC sensor functionality (manual button control only)
+#define ENABLE_AC_SENSORS false
 
 
 // servo stuff 
 #define CLOSE_DELAY 1000 // how long it takes a gate to close
-#define OPEN_DELAY 1000 // how long after last button push to open gate
+#define OPEN_DELAY 800 // how long after last button push to open gate
 
 #define HAS_BUTTON true  // true if button is attached
 #define BUTTON_PIN 13    // the number of the pushbutton pin
