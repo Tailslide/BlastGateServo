@@ -1,6 +1,5 @@
 #ifndef CONFIGURATION_H
-#define CONFIGURATION_H 
-#define CONFIGURATION_H_VERSION 01
+#define CONFIGURATION_H_VERSION 1
 
 // All user defined settings required to configure operation are in this file
 

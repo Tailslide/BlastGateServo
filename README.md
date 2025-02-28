@@ -99,3 +99,5 @@ Updated 2025-02-26 - Fixed button timing logic to properly open gates after sele
 Updated 2025-02-26 - Improved timer logic to ensure gates open/close reliably, reduced OPEN_DELAY to 800ms
 Updated 2025-02-26 - Implemented proper button debouncing and state machine for more reliable operation
 Updated 2025-02-26 - Fixed issue with servos not moving when button was pressed
+Updated 2025-02-26 - Enhanced gate selection to automatically skip disabled gates when cycling through options
+Updated 2025-02-27 - Fixed compiler warnings in Configuration.h (removed redundant header guard and corrected version number format) and in GateServos.h (fixed signed/unsigned comparison by changing opendelay type to unsigned long)
