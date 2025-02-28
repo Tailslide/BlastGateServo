@@ -23,6 +23,15 @@
     static const int servo_pin_7 = SERVO_PIN_7;
     static const int servo_pin_8 = SERVO_PIN_8;
 
+    static const bool gate_closed_at_max_1 = GATE_CLOSED_AT_MAX_1;
+    static const bool gate_closed_at_max_2 = GATE_CLOSED_AT_MAX_2;
+    static const bool gate_closed_at_max_3 = GATE_CLOSED_AT_MAX_3;
+    static const bool gate_closed_at_max_4 = GATE_CLOSED_AT_MAX_4;
+    static const bool gate_closed_at_max_5 = GATE_CLOSED_AT_MAX_5;
+    static const bool gate_closed_at_max_6 = GATE_CLOSED_AT_MAX_6;
+    static const bool gate_closed_at_max_7 = GATE_CLOSED_AT_MAX_7;
+    static const bool gate_closed_at_max_8 = GATE_CLOSED_AT_MAX_8;
+
     static const int servo_max_1 = SERVO_MAX_1;
     static const int servo_max_2 = SERVO_MAX_2;
     static const int servo_max_3 = SERVO_MAX_3;
@@ -51,10 +60,11 @@
     static const int led_pin_8 = LED_PIN_8;
     static const int closedelay = CLOSE_DELAY;
 
-    const int servopin[8] = {servo_pin_1,servo_pin_2,servo_pin_3,servo_pin_4,servo_pin_5,servo_pin_6,servo_pin_7,servo_pin_8}; 
+    const int servopin[8] = {servo_pin_1,servo_pin_2,servo_pin_3,servo_pin_4,servo_pin_5,servo_pin_6,servo_pin_7,servo_pin_8};
     const int maxservo[8] = {servo_max_1,servo_max_2,servo_max_3,servo_max_4,servo_max_5,servo_max_6,servo_max_7,servo_max_8};
     const int minservo[8] = {servo_min_1,servo_min_2,servo_min_3,servo_min_4,servo_min_5,servo_min_6,servo_min_7,servo_min_8};
-    const int ledpin[8] = {led_pin_1,led_pin_2,led_pin_3,led_pin_4,led_pin_5,led_pin_6,led_pin_7,led_pin_8}; // LED pins    
+    const int ledpin[8] = {led_pin_1,led_pin_2,led_pin_3,led_pin_4,led_pin_5,led_pin_6,led_pin_7,led_pin_8}; // LED pins
+    const bool gateClosedAtMax[8] = {gate_closed_at_max_1,gate_closed_at_max_2,gate_closed_at_max_3,gate_closed_at_max_4,gate_closed_at_max_5,gate_closed_at_max_6,gate_closed_at_max_7,gate_closed_at_max_8}; // Gate orientation
 
     
     Servo myservo;  // create servo object to control a servo

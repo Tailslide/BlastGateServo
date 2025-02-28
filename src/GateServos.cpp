@@ -19,8 +19,19 @@
       DPRINT(gatenum + 1); // Display as 1-based
       DPRINT(" SERVO PIN:");
       DPRINT(servopin[gatenum]);
+      
+      // Determine the correct position based on gate orientation
+      int openPosition;
+      if (gateClosedAtMax[gatenum]) {
+        // Normal orientation: min = open, max = closed
+        openPosition = minservo[gatenum];
+      } else {
+        // Inverted orientation: max = open, min = closed
+        openPosition = maxservo[gatenum];
+      }
+      
       DPRINT(" VALUE:");
-      DPRINT(minservo[gatenum]);
+      DPRINT(openPosition);
       DPRINT(" DELAY:");
       DPRINT(opendelay);
       DPRINTLN("");
@@ -35,10 +46,10 @@
         
         // Debug the servo position
         DPRINT("Setting servo to position: ");
-        DPRINTLN(minservo[gatenum]);
+        DPRINTLN(openPosition);
         
         // Move the servo to open position
-        myservo.write(minservo[gatenum]); //open gate
+        myservo.write(openPosition); //open gate
         
         // Wait for gate to open
         delay(opendelay);
@@ -59,14 +70,26 @@
   {
     DPRINT("CLOSING GATE #");
     DPRINT(gatenum + 1); // Display as 1-based
-    DPRINTLN("");
+    
+    // Determine the correct position based on gate orientation
+    int closePosition;
+    if (gateClosedAtMax[gatenum]) {
+      // Normal orientation: max = closed, min = open
+      closePosition = maxservo[gatenum];
+    } else {
+      // Inverted orientation: min = closed, max = open
+      closePosition = minservo[gatenum];
+    }
+    
+    DPRINT(" VALUE:");
+    DPRINTLN(closePosition);
     
     digitalWrite(ledpin[gatenum], LOW);
     
     // Only control the servo if the pin is valid (not -1)
     if (servopin[gatenum] != -1) {
       myservo.attach(servopin[gatenum]);  // attaches the servo
-      myservo.write(maxservo[gatenum]); //close gate
+      myservo.write(closePosition); //close gate
       delay(closedelay); // wait for gate to close
       myservo.detach();
       DPRINTLN("CLOSED GATE");
@@ -104,15 +127,27 @@
      pinMode(ledpin[thisgate], OUTPUT);
      digitalWrite(ledpin[thisgate], HIGH);
      
+     // Determine the correct position based on gate orientation
+     int closePosition;
+     if (gateClosedAtMax[thisgate]) {
+       // Normal orientation: max = closed, min = open
+       closePosition = maxservo[thisgate];
+     } else {
+       // Inverted orientation: min = closed, max = open
+       closePosition = minservo[thisgate];
+     }
+     
      // Only control the servo if the pin is valid (not -1)
      if (servopin[thisgate] != -1) {
        DPRINT("Initializing gate #");
        DPRINT(thisgate + 1); // Display as 1-based
        DPRINT(" on pin ");
-       DPRINTLN(servopin[thisgate]);
+       DPRINT(servopin[thisgate]);
+       DPRINT(" to position ");
+       DPRINTLN(closePosition);
        
        myservo.attach(servopin[thisgate]);  // attaches the servo
-       myservo.write(maxservo[thisgate]); //close gate
+       myservo.write(closePosition); //close gate
        delay(closedelay); // wait for gate to close
        myservo.detach();
      } else {
@@ -172,9 +207,19 @@
         DPRINT("Using servo pin: ");
         DPRINTLN(servopin[curopengate]);
         
+        // Determine the correct position based on gate orientation
+        int openPosition;
+        if (gateClosedAtMax[curopengate]) {
+          // Normal orientation: min = open, max = closed
+          openPosition = minservo[curopengate];
+        } else {
+          // Inverted orientation: max = open, min = closed
+          openPosition = maxservo[curopengate];
+        }
+        
         // Debug the servo position
         DPRINT("Target position: ");
-        DPRINTLN(minservo[curopengate]);
+        DPRINTLN(openPosition);
         
         // Even if the servo pin is disabled (-1), we still update the state
         // and control the LED to maintain the user-facing gate numbering

@@ -78,8 +78,11 @@ All settings can be adjusted in Configuration.h:
 * LED pins (LED_PIN_1 through LED_PIN_5)
 
 ### Servo Position Configuration
-* SERVO_MAX_x - Closed position for each servo (0-180 degrees)
-* SERVO_MIN_x - Open position for each servo (0-180 degrees)
+* SERVO_MAX_x - Maximum position for each servo (typically 180 degrees)
+* SERVO_MIN_x - Minimum position for each servo (typically 0 degrees)
+* GATE_CLOSED_AT_MAX_x - Determines gate orientation:
+  * Set to true (default) if gate is closed when servo is at max position
+  * Set to false if gate is open when servo is at max position (inverted)
 * Set any servo's MAX/MIN values even if the pin is disabled (-1) to maintain consistent configuration
 
 ## Project Structure
@@ -101,3 +104,4 @@ Updated 2025-02-26 - Implemented proper button debouncing and state machine for 
 Updated 2025-02-26 - Fixed issue with servos not moving when button was pressed
 Updated 2025-02-26 - Enhanced gate selection to automatically skip disabled gates when cycling through options
 Updated 2025-02-27 - Fixed compiler warnings in Configuration.h (removed redundant header guard and corrected version number format) and in GateServos.h (fixed signed/unsigned comparison by changing opendelay type to unsigned long)
+Updated 2025-02-27 - Added gate orientation configuration (GATE_CLOSED_AT_MAX_x) to support different physical gate setups where gates may be open when up or closed when up
