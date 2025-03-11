@@ -93,6 +93,7 @@ All settings can be adjusted in Configuration.h:
 * include/Debug.h - Debug output macros and configuration
 * platformio.ini - PlatformIO project configuration and library dependencies
 
+## Changes
 * Created 2019-01-02 - Greg Pringle
 * Updated 2019-01-20 - Greg Pringle - Added AC sensor support
 * Updated 2025-01-26 - Added VSCode/PlatformIO support
