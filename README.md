@@ -93,15 +93,15 @@ All settings can be adjusted in Configuration.h:
 * include/Debug.h - Debug output macros and configuration
 * platformio.ini - PlatformIO project configuration and library dependencies
 
-Created 2019-01-02 - Greg Pringle
-Updated 2019-01-20 - Greg Pringle - Added AC sensor support
-Updated 2025-01-26 - Added VSCode/PlatformIO support
-Updated 2025-02-16 - Added detailed configuration documentation and converted to proper C++ structure
-Updated 2025-02-26 - Added support for disabling specific servos (set pin to -1) while maintaining gate numbering
-Updated 2025-02-26 - Fixed button timing logic to properly open gates after selection
-Updated 2025-02-26 - Improved timer logic to ensure gates open/close reliably, reduced OPEN_DELAY to 800ms
-Updated 2025-02-26 - Implemented proper button debouncing and state machine for more reliable operation
-Updated 2025-02-26 - Fixed issue with servos not moving when button was pressed
-Updated 2025-02-26 - Enhanced gate selection to automatically skip disabled gates when cycling through options
-Updated 2025-02-27 - Fixed compiler warnings in Configuration.h (removed redundant header guard and corrected version number format) and in GateServos.h (fixed signed/unsigned comparison by changing opendelay type to unsigned long)
-Updated 2025-02-27 - Added gate orientation configuration (GATE_CLOSED_AT_MAX_x) to support different physical gate setups where gates may be open when up or closed when up
+*Created 2019-01-02 - Greg Pringle
+*Updated 2019-01-20 - Greg Pringle - Added AC sensor support
+*Updated 2025-01-26 - Added VSCode/PlatformIO support
+*Updated 2025-02-16 - Added detailed configuration documentation and converted to proper C++ structure
+*Updated 2025-02-26 - Added support for disabling specific servos (set pin to -1) while maintaining gate numbering
+*Updated 2025-02-26 - Fixed button timing logic to properly open gates after selection
+*Updated 2025-02-26 - Improved timer logic to ensure gates open/close reliably, reduced OPEN_DELAY to 800ms
+*Updated 2025-02-26 - Implemented proper button debouncing and state machine for more reliable operation
+*Updated 2025-02-26 - Fixed issue with servos not moving when button was pressed
+*Updated 2025-02-26 - Enhanced gate selection to automatically skip disabled gates when cycling through options
+*Updated 2025-02-27 - Fixed compiler warnings in Configuration.h (removed redundant header guard and corrected version number format) and in GateServos.h (fixed signed/unsigned comparison by changing opendelay type to unsigned long)
+*Updated 2025-02-27 - Added gate orientation configuration (GATE_CLOSED_AT_MAX_x) to support different physical gate setups where gates may be open when up or closed when up
