@@ -121,7 +121,7 @@
   {
     //testServo(12);
       // close all gates one by one
-    for (int thisgate = 0; thisgate < num_gates; thisgate++)
+    for (int thisgate = 0; thisgate < num_gates && thisgate < 8; thisgate++)
     {
      // Always set up the LED pin
      pinMode(ledpin[thisgate], OUTPUT);
@@ -232,7 +232,7 @@
   // return index of first open gate or -1 for none
   int GateServos::firstgateopen()
   {
-    for (int curgate = 0; curgate < num_gates; curgate++) {
+    for (int curgate = 0; curgate < num_gates && curgate < 8; curgate++) {
       // Only consider gates with valid servo pins (not -1)
       if (gateopen[curgate]) {
         if (servopin[curgate] != -1) {

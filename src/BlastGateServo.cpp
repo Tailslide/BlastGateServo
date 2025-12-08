@@ -323,7 +323,7 @@ void loop()
   }
   else // not meter mode
   {
-    for (int cursensor=0; cursensor < acsensors.num_ac_sensors; cursensor++)
+    for (int cursensor=0; cursensor < acsensors.num_ac_sensors && cursensor < NUM_AC_SENSORS; cursensor++)
     {
         // This sensor is triggered by power tool
         //

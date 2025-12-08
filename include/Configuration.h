@@ -12,7 +12,7 @@
 #define TEST_SERVO_INDEX 1 // Which servo to test (1 = first servo, 2 = second servo, etc.)
 
 // Set to false to disable AC sensor functionality (manual button control only)
-#define ENABLE_AC_SENSORS false
+#define ENABLE_AC_SENSORS true
 
 
 // servo stuff 
@@ -54,7 +54,7 @@
 #define AC_SENSOR_PIN_2 A1 // ..etc...
 #define AC_SENSOR_PIN_3 A2
 #define AC_SENSOR_PIN_4 A3
-#define AC_SENSOR_PIN_5 A4
+#define AC_SENSOR_PIN_5 -1 //A4
 #define AC_SENSOR_PIN_6 -1
 #define AC_SENSOR_PIN_7 -1
 #define AC_SENSOR_PIN_8 -1

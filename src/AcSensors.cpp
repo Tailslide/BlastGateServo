@@ -32,7 +32,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
       DPRINTLN("Initializing AC sensors...");
       DPRINT("Number of sensors: "); DPRINTLN(num_ac_sensors);
       
-      for (int x = 0; x< num_ac_sensors; x++) {
+      for (int x = 0; x < num_ac_sensors && x < NUM_AC_SENSORS; x++) {
           DPRINT("Setting up LED pin "); DPRINT(ledpin[x]); DPRINTLN(" as OUTPUT");
           pinMode(ledpin[x], OUTPUT);
       }
@@ -70,7 +70,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
   //////////////////////////////////////////////////////////////////////
   void AcSensors::getMaxOffSensorReadings()
   {
-    for (int x = 0; x< num_ac_sensors; x++)
+    for (int x = 0; x < num_ac_sensors && x < NUM_AC_SENSORS; x++)
     {
         int maxsensorval = 0;
         for (long y = 0; y < numoffmaxsamples; y++)
@@ -97,7 +97,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
     if (curreadingindex >= avg_readings) curreadingindex =0;
     
       // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V):
-    for (int cursensor=0; cursensor < num_ac_sensors; cursensor++)
+    for (int cursensor=0; cursensor < num_ac_sensors && cursensor < NUM_AC_SENSORS; cursensor++)
     {
        int sensorValue = analogRead(sensorPins[cursensor]);
        //float voltage = sensorValue * (5.0 / 1023.0);
@@ -122,7 +122,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
   void AcSensors::DisplayMeter()
   {
       DPRINTLN("\n--- Meter Mode Readings ---");
-      for (int cursensor= 0; cursensor < num_ac_sensors; cursensor++)
+      for (int cursensor= 0; cursensor < num_ac_sensors && cursensor < NUM_AC_SENSORS; cursensor++)
       {
         DPRINT("Sensor #"); DPRINT(cursensor + 1); DPRINT(": ");
         int avgthissensor =  AvgSensorReading(cursensor);
@@ -204,7 +204,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
   //////////////////////////////////////////////////////////////////////
   void AcSensors::getAvgOffSensorReadings()
   {
-    for (int x = 0; x< num_ac_sensors; x++)
+    for (int x = 0; x < num_ac_sensors && x < NUM_AC_SENSORS; x++)
     {
         long totalsensorval = 0;
         for (int y = 0; y < numoffsamples; y++)
