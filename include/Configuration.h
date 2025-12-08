@@ -6,11 +6,13 @@
 //#ifndef DEBUG
 //#define DEBUG   //Enable debug output - set this in platformio.ini instead
 //#endif
-#define DEBUGMETER // debug meter mode for placing sensors on cables
+//#define DEBUGMETER // debug meter mode for placing sensors on cables
 //#define DEBUG_METER_VERBOSE // Enable verbose debug output in meter mode (slows down LED blinking)
 //#define DEBUG_LED_TEST // Enable LED test mode - flashes LEDs in sequence
 //#define DEBUG_SERVO_TEST // Enable servo test mode - opens/closes a servo with button press
 #define TEST_SERVO_INDEX 1 // Which servo to test (1 = first servo, 2 = second servo, etc.)
+#define DEBUG_SENSOR_TEST // Enable sensor test mode - display raw readings for a specific sensor
+#define TEST_SENSOR_INDEX 5 // Which sensor to test (1 = first sensor, 2 = second sensor, etc.)
 
 // Set to false to disable AC sensor functionality (manual button control only)
 #define ENABLE_AC_SENSORS true

@@ -97,6 +97,11 @@ void setup() {
   #ifdef DEBUGMETER
       metermode = true;
   #endif
+  
+  #ifdef DEBUG_SENSOR_TEST
+      metermode = true;
+      DPRINTLN("Entering sensor test mode");
+  #endif
 
   // Initialize sensors before anything else
   acsensors.InitializeSensors();

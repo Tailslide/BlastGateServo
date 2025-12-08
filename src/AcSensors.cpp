@@ -121,6 +121,34 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
   //////////////////////////////////////////////////////////////////////  
   void AcSensors::DisplayMeter()
   {
+      #ifdef DEBUG_SENSOR_TEST
+      // Sensor test mode - display only the selected sensor with detailed output
+      int testSensor = TEST_SENSOR_INDEX - 1; // Convert to 0-based index
+      if (testSensor >= 0 && testSensor < num_ac_sensors) {
+          int avgthissensor = AvgSensorReading(testSensor);
+          float delta = avgthissensor - offReadings[testSensor];
+          
+          DPRINT("Sensor #");
+          DPRINT(TEST_SENSOR_INDEX);
+          DPRINT(" | Raw: ");
+          DPRINT(avgthissensor);
+          DPRINT(" | Baseline: ");
+          DPRINT(offReadings[testSensor]);
+          DPRINT(" | Delta: ");
+          DPRINT(delta);
+          DPRINT(" | Triggered: ");
+          DPRINTLN(Triggered(testSensor) ? "YES" : "NO");
+          
+          // Still control the LED for visual feedback
+          if (Triggered(testSensor)) {
+              digitalWrite(ledpin[testSensor], HIGH);
+          } else {
+              digitalWrite(ledpin[testSensor], LOW);
+          }
+      }
+      return; // Exit early in sensor test mode
+      #endif
+      
       #ifdef DEBUG_METER_VERBOSE
       DPRINTLN("\n--- Meter Mode Readings ---");
       #endif
