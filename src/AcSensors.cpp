@@ -121,10 +121,16 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
   //////////////////////////////////////////////////////////////////////  
   void AcSensors::DisplayMeter()
   {
+      #ifdef DEBUG_METER_VERBOSE
       DPRINTLN("\n--- Meter Mode Readings ---");
+      #endif
+      
       for (int cursensor= 0; cursensor < num_ac_sensors && cursensor < NUM_AC_SENSORS; cursensor++)
       {
+        #ifdef DEBUG_METER_VERBOSE
         DPRINT("Sensor #"); DPRINT(cursensor + 1); DPRINT(": ");
+        #endif
+        
         int avgthissensor =  AvgSensorReading(cursensor);
         //float percent = avgthissensor / 4.5;
         // Calculate the signal strength relative to baseline
@@ -137,10 +143,12 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
             if (percent > 1) percent = 1;
         }
         
+        #ifdef DEBUG_METER_VERBOSE
         // Debug raw values
         DPRINT(" Raw: "); DPRINT(avgthissensor);
         DPRINT(" Baseline: "); DPRINT(offReadings[cursensor]);
         DPRINT(" Delta: "); DPRINT(delta);
+        #endif
         
         // Calculate blink length based on signal strength
         int blinklen = maxblinklen;  // Default to slow blink for no signal
@@ -159,6 +167,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
           digitalWrite(ledpin[cursensor], blinkon[cursensor] ? HIGH : LOW);
         }
   
+        #ifdef DEBUG_METER_VERBOSE
         // print out the value you read:
         DPRINT(percent);
         DPRINT("    " );
@@ -171,6 +180,7 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
         #ifdef DEBUG
         //displayaverages(cursensor);
         #endif
+        #endif
               
         if (blinktimers[cursensor] > blinklen)
         {
@@ -178,15 +188,19 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
           if (blinkon[cursensor])
           {
            digitalWrite(ledpin[cursensor], LOW);
+           #ifdef DEBUG_METER_VERBOSE
            DPRINT("LED OFF " );
            DPRINTLN(cursensor);
+           #endif
            blinkon[cursensor]=false;
           }
           else
           {
            digitalWrite(ledpin[cursensor], HIGH);
+           #ifdef DEBUG_METER_VERBOSE
            DPRINT("LED ON" );
            DPRINTLN(cursensor);
+           #endif
            blinkon[cursensor] = true;
           }
         }
