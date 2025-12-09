@@ -15,7 +15,7 @@ See 3d printed parts at : https://www.thingiverse.com/thing:3301904
 * A servo for each blast gate (up to 5)
 * One push button
 * Optional: An LED for each blast gate
-* Optional: AC current sensors from http://moderndevice.com/current
+* Optional: AC current sensors from https://moderndevice.com/products/current-sensor
 
 ## Development Setup
 1. Install Visual Studio Code
