@@ -139,6 +139,39 @@ void setup() {
 
 void loop()
 {
+  // Check for error state and display error pattern
+  if (gateservos.isInErrorState()) {
+    // Flash all LEDs rapidly to indicate error
+    static unsigned long lastFlash = 0;
+    static bool flashState = false;
+    
+    if (millis() - lastFlash >= ERROR_FLASH_INTERVAL_MS) {
+      flashState = !flashState;
+      lastFlash = millis();
+      
+      // Flash all LEDs
+      for (int i = 0; i < gateservos.num_gates; i++) {
+        if (flashState) {
+          gateservos.ledon(i);
+        } else {
+          gateservos.ledoff(i);
+        }
+      }
+      
+      // Print error message periodically (every 10 flashes)
+      static int flashCount = 0;
+      flashCount++;
+      if (flashCount >= 10) {
+        DPRINTLN("ERROR STATE: System halted due to excessive servo operations");
+        DPRINTLN("Restart required to resume operation");
+        flashCount = 0;
+      }
+    }
+    
+    // Do not process any other logic when in error state
+    return;
+  }
+  
   #ifdef DEBUG_LED_TEST
   // LED test pattern - flash each LED in sequence or all on when button pressed
   static int currentLed = 0;

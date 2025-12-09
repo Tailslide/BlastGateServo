@@ -70,6 +70,27 @@ All settings can be adjusted in Configuration.h:
 * AVG_READINGS - Number of readings to average when triggering gates (max 50)
 * AC_SENSOR_SENSITIVITY - Trigger threshold multiplier (2.0 = twice max off reading)
 
+### Flutter Protection Settings
+The system includes comprehensive protection against AC sensor flutter that could cause rapid servo cycling and potential hardware damage:
+
+* **AC_SENSOR_SENSITIVITY_ON** (default: 2.0) - Threshold multiplier to turn tool ON
+* **AC_SENSOR_SENSITIVITY_OFF** (default: 1.5) - Threshold multiplier to turn tool OFF (creates hysteresis)
+* **DEBOUNCE_STABLE_READINGS** (default: 3) - Number of consecutive stable readings required before state change
+* **MIN_SERVO_INTERVAL_MS** (default: 2000) - Minimum milliseconds between operations on the same gate
+* **MAX_OPS_PER_MINUTE** (default: 10) - Maximum operations per minute before emergency shutdown
+* **ERROR_FLASH_INTERVAL_MS** (default: 200) - LED flash interval when in error state
+
+#### How Flutter Protection Works
+1. **Hysteresis**: Uses different thresholds for turning ON (2.0x baseline) vs turning OFF (1.5x baseline) to prevent rapid toggling around a single threshold
+2. **Debouncing**: Requires 3 consecutive stable sensor readings before changing gate state, filtering out momentary noise spikes
+3. **Minimum Interval**: Enforces 2-second minimum between operations on the same gate, even if sensor readings change
+4. **Rate Limiting**: Tracks operations per minute and enters error state if limit exceeded
+5. **Error State**: When too many operations detected (flutter condition):
+   - All LEDs flash rapidly in error pattern
+   - All automatic gate operations are disabled
+   - System requires restart to recover
+   - Alerts user to problematic sensor or configuration issue
+
 ### Pin Assignments
 * Servo pins (SERVO_PIN_1 through SERVO_PIN_5)
   * Set any servo pin to -1 to disable that servo while maintaining the gate numbering
@@ -106,3 +127,10 @@ All settings can be adjusted in Configuration.h:
 * Updated 2025-02-26 - Enhanced gate selection to automatically skip disabled gates when cycling through options
 * Updated 2025-02-27 - Fixed compiler warnings in Configuration.h (removed redundant header guard and corrected version number format) and in GateServos.h (fixed signed/unsigned comparison by changing opendelay type to unsigned long)
 * Updated 2025-02-27 - Added gate orientation configuration (GATE_CLOSED_AT_MAX_x) to support different physical gate setups where gates may be open when up or closed when up
+* Updated 2025-12-08 - Implemented comprehensive flutter protection system to prevent AC sensor flutter from damaging hardware:
+  - Added hysteresis (different ON/OFF thresholds) to prevent rapid state toggling
+  - Implemented debouncing requiring 3 consecutive stable readings before state change
+  - Added minimum 2-second interval between servo operations on same gate
+  - Implemented rate limiting with emergency shutdown if more than 10 operations per minute
+  - Added error state with flashing LED pattern and system halt on flutter detection
+  - All protection settings are configurable in Configuration.h

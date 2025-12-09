@@ -7,14 +7,100 @@
   // Constructor.. usually called with -1 to indicate no gates are open
   //
   GateServos::GateServos(int initcuropengate)
-  { 
+  {
     curopengate = initcuropengate;
+    
+    // Initialize operation times buffer
+    for (int i = 0; i < maxOpsPerMinute; i++) {
+      operationTimes[i] = 0;
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // checkOperationAllowed(int gatenum)
+  //
+  // Check if a servo operation is allowed based on flutter protection rules
+  // Returns false if operation should be blocked
+  //////////////////////////////////////////////////////////////////////
+  bool GateServos::checkOperationAllowed(int gatenum)
+  {
+    // Don't allow operations if in error state
+    if (errorState) {
+      DPRINTLN("Operation blocked: System in error state");
+      return false;
+    }
+    
+    unsigned long currentTime = millis();
+    
+    // Check minimum interval between operations on same gate
+    if (currentTime - lastOperationTime[gatenum] < minServoInterval) {
+      DPRINT("Operation blocked: Too soon since last operation on gate #");
+      DPRINT(gatenum + 1);
+      DPRINT(" (");
+      DPRINT(currentTime - lastOperationTime[gatenum]);
+      DPRINT("ms < ");
+      DPRINT(minServoInterval);
+      DPRINTLN("ms)");
+      return false;
+    }
+    
+    // Check rate limiting - count operations in last minute
+    unsigned long oneMinuteAgo = currentTime - 60000;
+    int recentOps = 0;
+    for (int i = 0; i < maxOpsPerMinute; i++) {
+      if (operationTimes[i] > oneMinuteAgo) {
+        recentOps++;
+      }
+    }
+    
+    if (recentOps >= maxOpsPerMinute) {
+      // Too many operations - enter error state
+      errorState = true;
+      DPRINTLN("CRITICAL ERROR: Too many servo operations detected!");
+      DPRINT("Operations in last minute: ");
+      DPRINTLN(recentOps);
+      DPRINTLN("System entering error state - restart required");
+      return false;
+    }
+    
+    return true;
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // recordOperation(int gatenum)
+  //
+  // Record a servo operation for rate limiting tracking
+  //////////////////////////////////////////////////////////////////////
+  void GateServos::recordOperation(int gatenum)
+  {
+    unsigned long currentTime = millis();
+    lastOperationTime[gatenum] = currentTime;
+    
+    // Add to circular buffer
+    operationTimes[operationIndex] = currentTime;
+    operationIndex = (operationIndex + 1) % maxOpsPerMinute;
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // isInErrorState()
+  //
+  // Check if the system is in error state
+  //////////////////////////////////////////////////////////////////////
+  bool GateServos::isInErrorState()
+  {
+    return errorState;
   }
 
   // Open the given gate number
   //
   void GateServos::opengate(int gatenum)
   {
+      // Check if operation is allowed (flutter protection)
+      if (!checkOperationAllowed(gatenum)) {
+        DPRINTLN("GATE OPEN BLOCKED BY FLUTTER PROTECTION");
+        return;
+      }
+      
       DPRINT("OPENING GATE #");
       DPRINT(gatenum + 1); // Display as 1-based
       DPRINT(" SERVO PIN:");
@@ -58,6 +144,9 @@
         myservo.detach();
         
         DPRINTLN("OPENED GATE");
+        
+        // Record this operation for flutter protection
+        recordOperation(gatenum);
       } else {
         DPRINTLN("SKIPPED SERVO (PIN DISABLED)");
         delay(opendelay); // still delay for consistency
@@ -68,6 +157,12 @@
   // Close the given gate number
   void GateServos::closegate(int gatenum)
   {
+    // Check if operation is allowed (flutter protection)
+    if (!checkOperationAllowed(gatenum)) {
+      DPRINTLN("GATE CLOSE BLOCKED BY FLUTTER PROTECTION");
+      return;
+    }
+    
     DPRINT("CLOSING GATE #");
     DPRINT(gatenum + 1); // Display as 1-based
     
@@ -93,6 +188,9 @@
       delay(closedelay); // wait for gate to close
       myservo.detach();
       DPRINTLN("CLOSED GATE");
+      
+      // Record this operation for flutter protection
+      recordOperation(gatenum);
     } else {
       DPRINTLN("SKIPPED SERVO (PIN DISABLED)");
       delay(closedelay); // still delay for consistency

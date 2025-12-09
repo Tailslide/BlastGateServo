@@ -264,10 +264,45 @@ const float AcSensors::acsensorsentitivity = AC_SENSOR_SENSITIVITY;
   // Triggered(int forsensor)
   //
   // Returns true if the given AC current sensor number is triggered
-  //////////////////////////////////////////////////////////////////////  
+  // Implements hysteresis and debouncing for flutter protection
+  //////////////////////////////////////////////////////////////////////
   bool AcSensors::Triggered(int forsensor)
   {
-    return (AvgSensorReading(forsensor) > ((float)offReadings[forsensor]  * acsensorsentitivity));
+    float avgReading = AvgSensorReading(forsensor);
+    bool currentState = sensorState[forsensor];
+    
+    // Determine threshold based on current state (hysteresis)
+    float threshold = currentState
+      ? offReadings[forsensor] * sensitivityOff   // Use lower threshold when ON (prevents flutter on falling edge)
+      : offReadings[forsensor] * sensitivityOn;    // Use higher threshold when OFF (prevents false triggers)
+    
+    // Determine desired state based on reading
+    bool desiredState = (avgReading > threshold);
+    
+    // If desired state matches current state, reset debounce counter
+    if (desiredState == currentState) {
+      debounceCounter[forsensor] = 0;
+      return currentState;
+    }
+    
+    // State change desired - increment debounce counter
+    debounceCounter[forsensor]++;
+    
+    // If we've seen enough consecutive readings in the new state, change state
+    if (debounceCounter[forsensor] >= debounceStableReadings) {
+      sensorState[forsensor] = desiredState;
+      debounceCounter[forsensor] = 0;
+      
+      #ifdef DEBUG
+      DPRINT("Sensor #");
+      DPRINT(forsensor);
+      DPRINT(" state changed to ");
+      DPRINTLN(desiredState ? "ON" : "OFF");
+      #endif
+    }
+    
+    // Return current state (may not have changed yet due to debouncing)
+    return sensorState[forsensor];
   }
 
 

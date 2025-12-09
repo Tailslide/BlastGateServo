@@ -59,6 +59,10 @@
     static const int led_pin_7 = LED_PIN_7;
     static const int led_pin_8 = LED_PIN_8;
     static const int closedelay = CLOSE_DELAY;
+    
+    // Flutter protection constants
+    static const unsigned long minServoInterval = MIN_SERVO_INTERVAL_MS;
+    static const int maxOpsPerMinute = MAX_OPS_PER_MINUTE;
 
     const int servopin[8] = {servo_pin_1,servo_pin_2,servo_pin_3,servo_pin_4,servo_pin_5,servo_pin_6,servo_pin_7,servo_pin_8};
     const int maxservo[8] = {servo_max_1,servo_max_2,servo_max_3,servo_max_4,servo_max_5,servo_max_6,servo_max_7,servo_max_8};
@@ -66,11 +70,16 @@
     const int ledpin[8] = {led_pin_1,led_pin_2,led_pin_3,led_pin_4,led_pin_5,led_pin_6,led_pin_7,led_pin_8}; // LED pins
     const bool gateClosedAtMax[8] = {gate_closed_at_max_1,gate_closed_at_max_2,gate_closed_at_max_3,gate_closed_at_max_4,gate_closed_at_max_5,gate_closed_at_max_6,gate_closed_at_max_7,gate_closed_at_max_8}; // Gate orientation
 
+    // Flutter protection state tracking
+    unsigned long lastOperationTime[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // Last operation timestamp per gate
+    unsigned long operationTimes[MAX_OPS_PER_MINUTE]; // Circular buffer of operation timestamps
+    int operationIndex = 0; // Current index in operation times buffer
+    bool errorState = false; // System error state flag
     
     Servo myservo;  // create servo object to control a servo
              // a maximum of eight servo objects can be created
     
-    public:    
+    public:
       GateServos(int curopengate);  // initialize indicating currenly open gate (usually -1 for none)
       void opengate(int gatenum);   // open the given gate number
       void closegate(int gatenum);  // close the given gate number
@@ -80,6 +89,9 @@
       void ManuallyOpenGate(int gatenum);   // User manually opening given gate using the button
       int firstgateopen();                  // Returns ID of first gate that is open
       void testServo(int servopin);         // Test given servo pin (debug function)
+      bool checkOperationAllowed(int gatenum); // Check if operation is allowed (flutter protection)
+      void recordOperation(int gatenum);    // Record an operation for rate limiting
+      bool isInErrorState();                // Check if system is in error state
       const int num_gates = NUM_GATES;      //
       int curopengate = -1;                 // cuurrently open gate selected manually with button
       const unsigned long opendelay = OPEN_DELAY;     // ms delay to allow servo to completely open gate

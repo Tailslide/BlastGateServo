@@ -34,6 +34,14 @@
 #define AVG_READINGS 25         // number of readings to average when triggering gates.. higher number is more accurate but more delay ( no more than 50)
 #define AC_SENSOR_SENSITIVITY 2.0 // Triggers on twice the max readings of the off setting. The closer to one, the more sensitive
 
+// Flutter Protection Settings
+#define AC_SENSOR_SENSITIVITY_ON  2.0  // Threshold to turn tool ON (same as AC_SENSOR_SENSITIVITY for backward compatibility)
+#define AC_SENSOR_SENSITIVITY_OFF 1.5  // Threshold to turn tool OFF (hysteresis prevents rapid toggling)
+#define DEBOUNCE_STABLE_READINGS  3    // Number of consecutive stable readings required before state change
+#define MIN_SERVO_INTERVAL_MS     2000 // Minimum milliseconds between servo operations on same gate
+#define MAX_OPS_PER_MINUTE        10   // Maximum operations per minute before emergency shutdown
+#define ERROR_FLASH_INTERVAL_MS   200  // LED flash interval in error state (milliseconds)
+
 
 // Blink timing for meter mode (in milliseconds)
 #ifdef DEBUG

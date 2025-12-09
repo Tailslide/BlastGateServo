@@ -39,14 +39,22 @@
     static const int ac_sensors = NUM_AC_SENSORS;
     static const int max_sensors = 8;
 
+    // Flutter protection constants
+    static const float sensitivityOn = AC_SENSOR_SENSITIVITY_ON;
+    static const float sensitivityOff = AC_SENSOR_SENSITIVITY_OFF;
+    static const int debounceStableReadings = DEBOUNCE_STABLE_READINGS;
 
     int curreadingindex = 0;
     int blinktimers[max_sensors] = {0,0,0,0,0,0,0,0};
     bool blinkon[max_sensors]= {false, false, false, false, false, false, false, false};
-    const int sensorPins[max_sensors] = { ac_sensor_1, ac_sensor_2, ac_sensor_3, ac_sensor_4, ac_sensor_5, ac_sensor_6, ac_sensor_7, ac_sensor_8 }; 
-    const int ledpin[max_sensors] = {led_pin_1,led_pin_2,led_pin_3,led_pin_4,led_pin_5,led_pin_6,led_pin_7,led_pin_8}; // LED pins    
+    const int sensorPins[max_sensors] = { ac_sensor_1, ac_sensor_2, ac_sensor_3, ac_sensor_4, ac_sensor_5, ac_sensor_6, ac_sensor_7, ac_sensor_8 };
+    const int ledpin[max_sensors] = {led_pin_1,led_pin_2,led_pin_3,led_pin_4,led_pin_5,led_pin_6,led_pin_7,led_pin_8}; // LED pins
     float offReadings[ac_sensors];
     int recentReadings[ac_sensors][avg_readings];
+    
+    // Flutter protection state tracking
+    bool sensorState[max_sensors] = {false, false, false, false, false, false, false, false}; // Current state (true = tool on)
+    int debounceCounter[max_sensors] = {0, 0, 0, 0, 0, 0, 0, 0}; // Consecutive readings in desired state
     
     public:    
       AcSensors();
