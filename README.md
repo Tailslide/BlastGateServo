@@ -83,7 +83,11 @@ The system includes comprehensive protection against AC sensor flutter that coul
 #### How Flutter Protection Works
 1. **Hysteresis**: Uses different thresholds for turning ON (2.0x baseline) vs turning OFF (1.5x baseline) to prevent rapid toggling around a single threshold
 2. **Debouncing**: Requires 3 consecutive stable sensor readings before changing gate state, filtering out momentary noise spikes
-3. **Minimum Interval**: Enforces 2-second minimum between operations on the same gate, even if sensor readings change
+3. **Minimum Interval with Queuing**: Enforces 2-second minimum between operations on the same gate
+   - If a gate operation is requested during the cooldown period, it is automatically queued
+   - The queued operation executes automatically once the minimum interval expires
+   - This ensures responsive operation while preventing rapid cycling
+   - Example: If you turn on a tool immediately after turning it off, the gate will open automatically 2 seconds later
 4. **Rate Limiting**: Tracks operations per minute and enters error state if limit exceeded
 5. **Error State**: When too many operations detected (flutter condition):
    - All LEDs flash rapidly in error pattern
@@ -130,7 +134,8 @@ The system includes comprehensive protection against AC sensor flutter that coul
 * Updated 2025-12-08 - Implemented comprehensive flutter protection system to prevent AC sensor flutter from damaging hardware:
   - Added hysteresis (different ON/OFF thresholds) to prevent rapid state toggling
   - Implemented debouncing requiring 3 consecutive stable readings before state change
-  - Added minimum 2-second interval between servo operations on same gate
+  - Added minimum 2-second interval between servo operations on same gate with automatic queuing
+  - Operations requested during cooldown are queued and execute automatically when interval expires
   - Implemented rate limiting with emergency shutdown if more than 10 operations per minute
   - Added error state with flashing LED pattern and system halt on flutter detection
   - All protection settings are configurable in Configuration.h

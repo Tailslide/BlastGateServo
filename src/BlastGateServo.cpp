@@ -350,6 +350,9 @@ void loop()
   #endif
 
   bool toolon = false; // indicates if there is any current sensed
+  
+  // Process any queued servo operations (flutter protection)
+  gateservos.processQueuedOperations();
 
   #if ENABLE_AC_SENSORS
   // Only process AC sensors if they are enabled

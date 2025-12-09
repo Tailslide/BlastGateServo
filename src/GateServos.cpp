@@ -14,13 +14,22 @@
     for (int i = 0; i < maxOpsPerMinute; i++) {
       operationTimes[i] = 0;
     }
+    
+    // Initialize queued operations
+    for (int i = 0; i < 8; i++) {
+      queuedOps[i].pending = false;
+      queuedOps[i].gatenum = -1;
+      queuedOps[i].isOpen = false;
+      queuedOps[i].requestTime = 0;
+    }
   }
 
   //////////////////////////////////////////////////////////////////////
   // checkOperationAllowed(int gatenum)
   //
   // Check if a servo operation is allowed based on flutter protection rules
-  // Returns false if operation should be blocked
+  // Returns true if operation can execute immediately
+  // Returns false if operation should be queued or blocked
   //////////////////////////////////////////////////////////////////////
   bool GateServos::checkOperationAllowed(int gatenum)
   {
@@ -32,19 +41,7 @@
     
     unsigned long currentTime = millis();
     
-    // Check minimum interval between operations on same gate
-    if (currentTime - lastOperationTime[gatenum] < minServoInterval) {
-      DPRINT("Operation blocked: Too soon since last operation on gate #");
-      DPRINT(gatenum + 1);
-      DPRINT(" (");
-      DPRINT(currentTime - lastOperationTime[gatenum]);
-      DPRINT("ms < ");
-      DPRINT(minServoInterval);
-      DPRINTLN("ms)");
-      return false;
-    }
-    
-    // Check rate limiting - count operations in last minute
+    // Check rate limiting first - count operations in last minute
     unsigned long oneMinuteAgo = currentTime - 60000;
     int recentOps = 0;
     for (int i = 0; i < maxOpsPerMinute; i++) {
@@ -60,6 +57,18 @@
       DPRINT("Operations in last minute: ");
       DPRINTLN(recentOps);
       DPRINTLN("System entering error state - restart required");
+      return false;
+    }
+    
+    // Check minimum interval between operations on same gate
+    if (currentTime - lastOperationTime[gatenum] < minServoInterval) {
+      DPRINT("Operation too soon for gate #");
+      DPRINT(gatenum + 1);
+      DPRINT(" (");
+      DPRINT(currentTime - lastOperationTime[gatenum]);
+      DPRINT("ms < ");
+      DPRINT(minServoInterval);
+      DPRINTLN("ms) - will be queued");
       return false;
     }
     
@@ -91,13 +100,69 @@
     return errorState;
   }
 
+  //////////////////////////////////////////////////////////////////////
+  // queueOperation(int gatenum, bool isOpen)
+  //
+  // Queue an operation for delayed execution when minimum interval expires
+  //////////////////////////////////////////////////////////////////////
+  void GateServos::queueOperation(int gatenum, bool isOpen)
+  {
+    if (gatenum < 0 || gatenum >= 8) return;
+    
+    queuedOps[gatenum].gatenum = gatenum;
+    queuedOps[gatenum].isOpen = isOpen;
+    queuedOps[gatenum].requestTime = millis();
+    queuedOps[gatenum].pending = true;
+    
+    DPRINT("Queued ");
+    DPRINT(isOpen ? "OPEN" : "CLOSE");
+    DPRINT(" operation for gate #");
+    DPRINTLN(gatenum + 1);
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // processQueuedOperations()
+  //
+  // Process any pending queued operations that can now execute
+  // Should be called regularly from main loop
+  //////////////////////////////////////////////////////////////////////
+  void GateServos::processQueuedOperations()
+  {
+    if (errorState) return; // Don't process queue in error state
+    
+    unsigned long currentTime = millis();
+    
+    for (int i = 0; i < 8; i++) {
+      if (!queuedOps[i].pending) continue;
+      
+      // Check if enough time has passed since last operation on this gate
+      if (currentTime - lastOperationTime[i] >= minServoInterval) {
+        DPRINT("Executing queued ");
+        DPRINT(queuedOps[i].isOpen ? "OPEN" : "CLOSE");
+        DPRINT(" for gate #");
+        DPRINTLN(i + 1);
+        
+        // Clear the queue entry first to avoid recursion
+        queuedOps[i].pending = false;
+        
+        // Execute the operation
+        if (queuedOps[i].isOpen) {
+          opengate(i);
+        } else {
+          closegate(i);
+        }
+      }
+    }
+  }
+
   // Open the given gate number
   //
   void GateServos::opengate(int gatenum)
   {
       // Check if operation is allowed (flutter protection)
       if (!checkOperationAllowed(gatenum)) {
-        DPRINTLN("GATE OPEN BLOCKED BY FLUTTER PROTECTION");
+        // Queue the operation for later execution
+        queueOperation(gatenum, true);
         return;
       }
       
@@ -159,7 +224,8 @@
   {
     // Check if operation is allowed (flutter protection)
     if (!checkOperationAllowed(gatenum)) {
-      DPRINTLN("GATE CLOSE BLOCKED BY FLUTTER PROTECTION");
+      // Queue the operation for later execution
+      queueOperation(gatenum, false);
       return;
     }
     

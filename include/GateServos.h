@@ -76,6 +76,15 @@
     int operationIndex = 0; // Current index in operation times buffer
     bool errorState = false; // System error state flag
     
+    // Operation queuing for delayed execution
+    struct QueuedOperation {
+      int gatenum;
+      bool isOpen; // true for open, false for close
+      unsigned long requestTime;
+      bool pending;
+    };
+    QueuedOperation queuedOps[8]; // One queued operation per gate
+    
     Servo myservo;  // create servo object to control a servo
              // a maximum of eight servo objects can be created
     
@@ -92,6 +101,8 @@
       bool checkOperationAllowed(int gatenum); // Check if operation is allowed (flutter protection)
       void recordOperation(int gatenum);    // Record an operation for rate limiting
       bool isInErrorState();                // Check if system is in error state
+      void queueOperation(int gatenum, bool isOpen); // Queue an operation for delayed execution
+      void processQueuedOperations();       // Process any pending queued operations
       const int num_gates = NUM_GATES;      //
       int curopengate = -1;                 // cuurrently open gate selected manually with button
       const unsigned long opendelay = OPEN_DELAY;     // ms delay to allow servo to completely open gate
