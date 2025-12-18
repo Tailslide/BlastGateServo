@@ -73,14 +73,14 @@
 // Gate orientation configuration
 // Set to true if gate is closed when servo is at max position (default)
 // Set to false if gate is open when servo is at max position (inverted)
-#define GATE_CLOSED_AT_MAX_1 true
-#define GATE_CLOSED_AT_MAX_2 true
-#define GATE_CLOSED_AT_MAX_3 true
-#define GATE_CLOSED_AT_MAX_4 true
-#define GATE_CLOSED_AT_MAX_5 true
-#define GATE_CLOSED_AT_MAX_6 true
-#define GATE_CLOSED_AT_MAX_7 true
-#define GATE_CLOSED_AT_MAX_8 true
+#define GATE_CLOSED_AT_MAX_1 false
+#define GATE_CLOSED_AT_MAX_2 false
+#define GATE_CLOSED_AT_MAX_3 false
+#define GATE_CLOSED_AT_MAX_4 false
+#define GATE_CLOSED_AT_MAX_5 false
+#define GATE_CLOSED_AT_MAX_6 false
+#define GATE_CLOSED_AT_MAX_7 false
+#define GATE_CLOSED_AT_MAX_8 false
 
 // Servo Max positions (180 degrees)
 // It's ok to leave at default and for the servo to try to go too far but it will increase the power load
